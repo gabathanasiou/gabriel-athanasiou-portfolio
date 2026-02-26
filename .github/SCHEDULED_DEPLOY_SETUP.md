@@ -16,7 +16,7 @@ This workflow syncs data from Airtable and deploys to Netlify **on-demand** (man
 
 ### 2. Add Build Hook to GitHub Secrets
 
-1. Go to your GitHub repo: https://github.com/s8y8b4rrwy-afk/gabriel-athanasiou-portfolio
+1. Go to your GitHub repo: https://github.com/gabathanasiou/gabriel-athanasiou-portfolio
 2. Click **Settings → Secrets and variables → Actions**
 3. Click **New repository secret**
 4. Name: `NETLIFY_BUILD_HOOK`

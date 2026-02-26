@@ -12,7 +12,7 @@ No scheduled content refreshes will run automatically. All updates require manua
 
 **Trigger a manual deployment via GitHub:**
 
-1. Go to: https://github.com/s8y8b4rrwy-afk/gabriel-athanasiou-portfolio/actions
+1. Go to: https://github.com/gabathanasiou/gabriel-athanasiou-portfolio/actions
 2. Click on "Manual Deploy to Netlify" workflow
 3. Click "Run workflow" button
 4. Optionally add a reason (e.g., "Content update")
