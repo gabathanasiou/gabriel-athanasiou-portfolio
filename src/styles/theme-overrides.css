@@ -1,0 +1,327 @@
+/* Global Theme Overrides */
+
+::selection {
+  background: var(--color-selection);
+  color: var(--color-selection-text, var(--color-text-main));
+}
+
+/* Light theme overrides */
+.light-theme {
+  --tw-bg-opacity: 1;
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+}
+
+/* Remove italic from headings in light theme (post-production) */
+.light-theme .italic,
+.light-theme .font-serif.italic,
+.light-theme h1.italic,
+.light-theme h2.italic,
+.light-theme h3.italic {
+  font-style: normal !important;
+}
+
+.light-theme .text-white {
+  color: #1a1a1a !important;
+}
+
+.light-theme .text-text-muted {
+  color: #888888 !important;
+}
+
+.light-theme .bg-bg-main {
+  background-color: #ffffff !important;
+}
+
+.light-theme .border-white\/10,
+.light-theme .border-white\/20,
+.light-theme .border-white\/30 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+.light-theme .filter-separator,
+.light-theme .bg-white\/10.filter-separator {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.light-theme button .border-white\/40,
+.light-theme button.text-white .border-white\/40,
+.light-theme .bg-black .border-white\/40,
+.light-theme [class*="bg-black"] .border-white\/40 {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.light-theme button .rounded-full.border,
+.light-theme .bg-black button .rounded-full.border {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.light-theme .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.light-theme .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+.light-theme .text-white\/20 {
+  color: rgba(0, 0, 0, 0.25) !important;
+}
+
+.light-theme .text-white\/60,
+.light-theme .text-white\/70,
+.light-theme .text-white\/80 {
+  color: rgba(0, 0, 0, 0.65) !important;
+}
+
+.light-theme .before\:text-white\/20::before {
+  color: rgba(0, 0, 0, 0.25) !important;
+}
+
+.light-theme .opacity-60 {
+  opacity: 0.5 !important;
+}
+
+.light-theme .from-bg-main {
+  --tw-gradient-from: #ffffff !important;
+}
+
+.light-theme .to-transparent {
+  --tw-gradient-to: transparent !important;
+}
+
+.light-theme .bg-gradient-to-t {
+  background-image: linear-gradient(to top, var(--tw-gradient-from), var(--tw-gradient-to)) !important;
+}
+
+.light-theme .bg-gradient-to-l {
+  background-image: linear-gradient(to left, #ffffff, transparent) !important;
+}
+
+.light-theme .hover\:text-white:hover {
+  color: #000000 !important;
+}
+
+.light-theme .hover\:opacity-100:hover {
+  opacity: 1 !important;
+}
+
+.light-theme nav {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+.light-theme nav > div.bg-gradient-to-b {
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.9), transparent) !important;
+}
+
+.light-theme nav:not(.nav-scrolled) {
+  color: white !important;
+}
+
+.light-theme nav:not(.nav-scrolled) a,
+.light-theme nav:not(.nav-scrolled) .text-white {
+  color: white !important;
+}
+
+.light-theme nav.nav-scrolled {
+  color: #1a1a1a !important;
+}
+
+.light-theme nav.nav-scrolled a,
+.light-theme nav.nav-scrolled .text-white {
+  color: #1a1a1a !important;
+}
+
+.light-theme nav a,
+.light-theme nav .text-white {
+  transition: color 0.5s ease-out !important;
+}
+
+.light-theme footer {
+  background-color: #f8f8f8 !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.light-theme .rounded-full.border {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+.light-theme .border-b.border-white {
+  border-color: #1a1a1a !important;
+}
+
+.light-theme .text-right.text-text-muted {
+  color: #999999 !important;
+}
+
+.light-theme .group:hover .text-white:not(.home-hero-text):not(.home-hero-text *):not(.next-project-text):not(.next-project-text *) {
+  color: #000000 !important;
+}
+
+.light-theme .group:hover .text-white span:not(.home-hero-text *):not(.next-project-text *),
+.light-theme .group:hover span.text-white:not(.home-hero-text):not(.next-project-text),
+.light-theme .group:hover div.text-white:not(.home-hero-text):not(.next-project-text) {
+  color: #000000 !important;
+  opacity: 1 !important;
+}
+
+.light-theme .bg-gradient-to-t.from-black,
+.light-theme .bg-gradient-to-b.from-black,
+.light-theme [class*="from-black"],
+.light-theme .from-bg-main {
+  background-image: none !important;
+  background: transparent !important;
+}
+
+.light-theme .bg-black\/10,
+.light-theme .bg-black\/20,
+.light-theme .bg-black\/30 {
+  background-color: transparent !important;
+}
+
+.light-theme .bg-black[style*="opacity"] {
+  background-color: transparent !important;
+}
+
+.light-theme .bg-white\/5,
+.light-theme .bg-white\/\[0\.02\] {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.light-theme .bg-white\/\[0\.02\] {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+.light-theme .mix-blend-difference:not(button):not(button *):not([class*="bg-black"] .mix-blend-difference):not(.home-hero-text):not(.home-hero-text *):not(.next-project-text):not(.next-project-text *) {
+  mix-blend-mode: normal !important;
+  color: #1a1a1a !important;
+}
+
+.light-theme .home-hero-text,
+.light-theme .home-hero-text * {
+  color: white !important;
+}
+
+.light-theme .next-project-text,
+.light-theme .next-project-text * {
+  color: white !important;
+}
+
+.light-theme .bg-black .mix-blend-difference,
+.light-theme [class*="bg-black"] .mix-blend-difference {
+  mix-blend-mode: difference !important;
+  color: white !important;
+}
+
+.light-theme button.mix-blend-difference {
+  mix-blend-mode: normal !important;
+}
+
+.light-theme button.mix-blend-difference span,
+.light-theme button.mix-blend-difference span.text-white,
+.light-theme button.text-white span {
+  color: white !important;
+}
+
+.light-theme button.group.mix-blend-difference:hover span.text-white,
+.light-theme button.group.mix-blend-difference .text-white {
+  color: white !important;
+}
+
+.light-theme button.close-btn-light,
+.light-theme button.close-btn-light svg,
+.light-theme button.close-btn-light svg path {
+  color: white !important;
+  stroke: white !important;
+}
+
+.light-theme button.close-btn-light .border-white\/40 {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.light-theme button.close-btn-dark,
+.light-theme button.close-btn-dark svg,
+.light-theme button.close-btn-dark svg path {
+  color: #1a1a1a !important;
+  stroke: #1a1a1a !important;
+}
+
+.light-theme button.close-btn-dark .border-black\/30 {
+  border-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.light-theme button.close-btn-light:hover .group-hover\:bg-white {
+  background-color: white !important;
+}
+
+.light-theme button.close-btn-light.group:hover svg,
+.light-theme button.close-btn-light.group:hover svg path {
+  stroke: black !important;
+  color: black !important;
+}
+
+.light-theme button.close-btn-dark:hover .group-hover\:bg-black {
+  background-color: black !important;
+}
+
+.light-theme button.close-btn-dark.group:hover svg,
+.light-theme button.close-btn-dark.group:hover svg path {
+  stroke: white !important;
+  color: white !important;
+}
+
+.light-theme button .border-white\/40,
+.light-theme .border-white\/40 {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.light-theme .bg-black svg[fill="currentColor"],
+.light-theme [class*="bg-black"] svg[fill="currentColor"] {
+  fill: white !important;
+  color: white !important;
+}
+
+.light-theme .bg-black svg[fill="currentColor"] path,
+.light-theme [class*="bg-black"] svg[fill="currentColor"] path {
+  fill: white !important;
+}
+
+.light-theme a:hover {
+  color: #000000 !important;
+}
+
+.light-theme ::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.light-theme ::-webkit-scrollbar-thumb {
+  background: #cccccc;
+}
+
+.light-theme ::-webkit-scrollbar-thumb:hover {
+  background: #aaaaaa;
+}
+
+.light-theme .bg-gray-100 {
+  background-color: #f5f5f5 !important;
+}
+
+.light-theme .bg-gray-900 {
+  background-color: #f5f5f5 !important;
+}
+
+.light-theme [style*="loadingShimmer"] {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.01) 0%,
+    rgba(0, 0, 0, 0.03) 16.7%,
+    rgba(0, 0, 0, 0.06) 33.3%,
+    rgba(0, 0, 0, 0.08) 50%,
+    rgba(0, 0, 0, 0.06) 66.7%,
+    rgba(0, 0, 0, 0.03) 83.3%,
+    rgba(0, 0, 0, 0.01) 100%
+  ) !important;
+  background-size: 200% 100% !important;
+}

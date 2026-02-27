@@ -7,7 +7,7 @@
 import { THEME } from '../theme';
 
 // Enable debug logging in development only
-const DEBUG = true; // Force enable for testing
+const DEBUG = import.meta.env.DEV;
 
 // Use THEME as the single source of truth for presets
 const CLOUDINARY_PRESETS = THEME.cloudinary.presets;
@@ -82,7 +82,7 @@ export const isSlowConnection = (): boolean => {
 
   const slowConnections = ['slow-2g', '2g', '3g'];
   const isSlow4G = connection.effectiveType === '4g' && connection.downlink && connection.downlink < 1.5;
-  
+
   return connection.saveData || slowConnections.includes(connection.effectiveType) || isSlow4G;
 };
 
@@ -137,13 +137,13 @@ const updatePresetOnConnectionChange = () => {
   if (typeof window === 'undefined') return;
 
   const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
-  
+
   if (connection && !connection._listenerAdded) {
     connection.addEventListener('change', () => {
       const newPreset = detectOptimalPreset();
       const STORAGE_KEY = 'cloudinary_preset';
       const oldPreset = sessionStorage.getItem(STORAGE_KEY);
-      
+
       if (oldPreset !== newPreset) {
         sessionStorage.setItem(STORAGE_KEY, newPreset);
         if (DEBUG) console.log(`🔄 Connection changed from ${connection.effectiveType}, updated preset: ${oldPreset} → ${newPreset}`);
@@ -164,13 +164,13 @@ export const getSessionPreset = (): CloudinaryPreset => {
   }
 
   const STORAGE_KEY = 'cloudinary_preset';
-  
+
   // Set up connection change listener (only once)
   updatePresetOnConnectionChange();
-  
+
   // Check session storage
   const cached = sessionStorage.getItem(STORAGE_KEY);
-  
+
   if (cached === 'micro' || cached === 'fine' || cached === 'ultra' || cached === 'hero') {
     if (DEBUG) console.log(`✅ Using cached preset: ${cached}`);
     return cached as CloudinaryPreset;
@@ -195,11 +195,11 @@ export const upgradePreset = (preset: CloudinaryPreset): CloudinaryPreset => {
   const currentIndex = hierarchy.indexOf(preset);
   const nextIndex = Math.min(currentIndex + 1, hierarchy.length - 1);
   const upgraded = hierarchy[nextIndex];
-  
+
   if (DEBUG && upgraded !== preset) {
     console.log(`⬆️ Preset upgraded: ${preset} → ${upgraded}`);
   }
-  
+
   return upgraded;
 };
 
@@ -243,7 +243,7 @@ export const buildCloudinaryUrl = (
   // ⚠️ Values come from cloudinaryConfig.mjs - edit there, not here!
   let qualityValue: number = CLOUDINARY_PRESETS.fine.quality;
   let widthValue: number = CLOUDINARY_PRESETS.fine.width;
-  
+
   if (options.preset) {
     if (options.preset === 'hero') {
       qualityValue = CLOUDINARY_PRESETS.hero.quality;
@@ -279,11 +279,11 @@ export const buildCloudinaryUrl = (
 
   // Construct Cloudinary URL
   const finalUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${transformations}/${publicId}`;
-  
+
   if (DEBUG) {
     console.log('Cloudinary URL:', { publicId, preset: options.preset, width, quality: qualityValue });
   }
-  
+
   return finalUrl;
 };
 
@@ -322,7 +322,7 @@ export const getOptimizedImageUrl = (
     if (DEBUG) console.warn(`No fallback URL for record ${recordId}`);
     return { cloudinaryUrl: '', localUrl: '', fallbackUrl: '', useCloudinary: false };
   }
-  
+
   // If no record ID, return fallback URL only
   if (!recordId) {
     if (DEBUG) console.warn('No record ID, using fallback URL only');
@@ -331,20 +331,20 @@ export const getOptimizedImageUrl = (
 
   // Check feature flag
   const useCloudinary = isCloudinaryEnabled();
-  
+
   // Build Cloudinary URL with preset (determines both quality and width)
   const cloudinaryOptions: CloudinaryOptions = {};
-  
+
   if (preset !== undefined) {
     cloudinaryOptions.preset = preset;
   }
-  
+
   const cloudinaryUrl = buildCloudinaryUrl(recordId, type, index, cloudinaryOptions);
-  
+
   // Build local WebP path - matches optimization script naming
   const imageId = `${type}-${recordId}${totalImages > 1 ? `-${index}` : ''}`;
   const localUrl = `/images/portfolio/${imageId}.webp`;
-  
+
   return {
     cloudinaryUrl,
     localUrl,
@@ -427,24 +427,24 @@ export const applyCloudinaryPreset = (
   preset: CloudinaryPreset = 'fine'
 ): string => {
   if (!imageUrl) return '';
-  
+
   // Check if this is a Cloudinary URL
   const cloudinaryMatch = imageUrl.match(
     /^(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)((?:[^/]+\/)*)?(.+)$/
   );
-  
+
   if (!cloudinaryMatch) {
     // Not a Cloudinary URL, return as-is
     if (DEBUG) console.log('🔗 Non-Cloudinary URL, using as-is:', imageUrl.substring(0, 50) + '...');
     return imageUrl;
   }
-  
+
   const [, baseUrl, existingTransforms, publicIdWithVersion] = cloudinaryMatch;
-  
+
   // Get preset settings
   let qualityValue: number;
   let widthValue: number;
-  
+
   switch (preset) {
     case 'hero':
       qualityValue = CLOUDINARY_PRESETS.hero.quality;
@@ -464,18 +464,18 @@ export const applyCloudinaryPreset = (
       widthValue = CLOUDINARY_PRESETS.fine.width;
       break;
   }
-  
+
   // Build transformation string
   const transformations = `f_webp,w_${widthValue},c_limit,q_${qualityValue}`;
-  
+
   // Construct the new URL with transformations applied
   const transformedUrl = `${baseUrl}${transformations}/${publicIdWithVersion}`;
-  
+
   if (DEBUG) {
     console.log('🎨 Applied Cloudinary preset:', { preset, width: widthValue, quality: qualityValue });
     console.log('   Original:', imageUrl.substring(0, 60) + '...');
     console.log('   Transformed:', transformedUrl.substring(0, 80) + '...');
   }
-  
+
   return transformedUrl;
 };

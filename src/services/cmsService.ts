@@ -43,7 +43,7 @@ const getCacheBustedUrl = (baseUrl: string): string => {
 const fetchCachedData = async (): Promise<ApiResponse> => {
     // Check if cache is still valid
     if (cachedData && cacheTimestamp && Date.now() - cacheTimestamp < CACHE_DURATION) {
-        console.log('[cmsService] Using client-side cache');
+        if (import.meta.env.DEV) console.log('[cmsService] Using client-side cache');
         return cachedData;
     }
 
@@ -51,8 +51,8 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
     try {
         // Add timestamp to bypass CDN cache and get fresh data
         const freshUrl = getCacheBustedUrl(CLOUDINARY_DATA_URL);
-        console.log('[cmsService] Fetching fresh data from Cloudinary CDN');
-        
+        if (import.meta.env.DEV) console.log('[cmsService] Fetching fresh data from Cloudinary CDN');
+
         const response = await fetch(freshUrl, {
             headers: {
                 'Accept': 'application/json',
@@ -67,8 +67,7 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
         }
 
         const data = await response.json();
-        
-        // Cache the data
+
         cachedData = {
             projects: data.projects || [],
             posts: data.posts || [],
@@ -76,12 +75,16 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
         };
         cacheTimestamp = Date.now();
 
-        console.log(`[cmsService] ✅ Loaded from Cloudinary: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
-        
+        if (import.meta.env.DEV) {
+            console.log(`[cmsService] ✅ Loaded from Cloudinary: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
+        }
+
         return cachedData;
     } catch (cloudinaryError) {
-        console.warn('[cmsService] ⚠️ Cloudinary fetch failed, trying local fallback:', cloudinaryError);
-        
+        if (import.meta.env.DEV) {
+            console.warn('[cmsService] ⚠️ Cloudinary fetch failed, trying local fallback:', cloudinaryError);
+        }
+
         // Fallback to local static file with cache-busting
         try {
             const localUrl = getCacheBustedUrl(LOCAL_DATA_URL);
@@ -99,8 +102,7 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
             }
 
             const data = await response.json();
-            
-            // Cache the data
+
             cachedData = {
                 projects: data.projects || [],
                 posts: data.posts || [],
@@ -108,22 +110,24 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
             };
             cacheTimestamp = Date.now();
 
-            console.log(`[cmsService] ✅ Loaded from local fallback: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
-            
+            if (import.meta.env.DEV) {
+                console.log(`[cmsService] ✅ Loaded from local fallback: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
+            }
+
             return cachedData;
         } catch (localError) {
             console.error('[cmsService] ❌ Both Cloudinary and local fetch failed');
             console.error('Cloudinary error:', cloudinaryError);
             console.error('Local error:', localError);
-            
+
             // If we have stale cache, return it
             if (cachedData) {
-                console.warn('[cmsService] Using stale cache due to fetch errors');
+                if (import.meta.env.DEV) console.warn('[cmsService] Using stale cache due to fetch errors');
                 return cachedData;
             }
-            
+
             // Last resort: return empty data with default config
-            console.warn('[cmsService] No cache available, using default empty state');
+            if (import.meta.env.DEV) console.warn('[cmsService] No cache available, using default empty state');
             return {
                 projects: [],
                 posts: [],
@@ -199,7 +203,7 @@ export const cmsService = {
     invalidateCache: () => {
         cachedData = null;
         cacheTimestamp = null;
-        console.log('[cmsService] Cache invalidated');
+        if (import.meta.env.DEV) console.log('[cmsService] Cache invalidated');
     },
 
     /**
@@ -217,19 +221,19 @@ export const cmsService = {
 
             const newData = await response.json();
             const lastUpdatedHeader = response.headers.get('X-Last-Updated');
-            
+
             // Simple check: compare data lengths
-            const hasUpdates = 
+            const hasUpdates =
                 newData.projects?.length !== cachedData.projects.length ||
                 newData.posts?.length !== cachedData.posts.length;
 
             if (hasUpdates) {
-                console.log('[cmsService] Updates detected');
+                if (import.meta.env.DEV) console.log('[cmsService] Updates detected');
             }
 
             return hasUpdates;
         } catch (error) {
-            console.warn('[cmsService] Update check failed:', error);
+            if (import.meta.env.DEV) console.warn('[cmsService] Update check failed:', error);
             return false;
         }
     }

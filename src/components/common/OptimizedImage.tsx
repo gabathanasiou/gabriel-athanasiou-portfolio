@@ -60,7 +60,7 @@ import { getOptimizedImageUrl, getSessionPreset, isSlowConnection, isUltraSlowCo
 import { THEME } from '../../theme';
 
 // Enable debug logging in development only
-const DEBUG = true; // Force enable for testing
+const DEBUG = import.meta.env.DEV;
 
 interface OptimizedImageProps {
   /** Airtable record ID */
@@ -124,8 +124,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   totalImages = 1,
   alt,
   className = '',
-  loading = 'lazy',
-  decoding = 'async',
+  loading = 'lazy' as const,
+  decoding = 'async' as const,
   useOriginalOnDesktop = false,
   preset,
   skipDowngrade = false
@@ -138,33 +138,33 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Auto-detect preset if not provided, with downgrades for slow connections and mobile devices
   let activePreset = preset || getSessionPreset();
-  
+
   // Skip all automatic downgrades if skipDowngrade is true (used for homepage hero)
   if (!skipDowngrade) {
     // Downgrade hero preset on ultra-slow connections (highest priority)
     if (activePreset === 'hero' && isUltraSlowConnection()) {
       activePreset = 'micro';
     }
-    
+
     // Downgrade hero preset on slow connections (prioritize performance over quality)
     if (activePreset === 'hero' && isSlowConnection()) {
       activePreset = 'fine';
     }
-    
+
     // Downgrade hero preset to ultra on mobile devices (configurable via theme)
     if (activePreset === 'hero' && typeof window !== 'undefined' && window.innerWidth < THEME.hero.mobileBreakpoint) {
       activePreset = 'ultra';
     }
-    
+
     // Downgrade bio preset on mobile devices (configurable via theme)
     if (activePreset === THEME.about.profileImagePreset && typeof window !== 'undefined' && window.innerWidth < THEME.about.mobileBreakpoint) {
       activePreset = THEME.about.mobilePreset;
     }
   }
-  
+
   if (DEBUG) {
-    console.log('🖼️ OptimizedImage:', { 
-      recordId, 
+    console.log('🖼️ OptimizedImage:', {
+      recordId,
       preset: activePreset,
       requestedPreset: preset,
       type
@@ -172,16 +172,16 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   }
 
   // Get all three URL options: Cloudinary, local WebP, Airtable
-  const imageUrls = useMemo(() => 
+  const imageUrls = useMemo(() =>
     getOptimizedImageUrl(recordId, fallbackUrl, type as 'project' | 'journal' | 'config', index, totalImages, activePreset)
-  , [recordId, fallbackUrl, type, index, totalImages, activePreset]);
+    , [recordId, fallbackUrl, type, index, totalImages, activePreset]);
 
   // Determine initial source based on feature flag
   // If totalImages is 0, skip optimized versions and go straight to fallback (video thumbnail)
-  const initialSrc = totalImages === 0 
+  const initialSrc = totalImages === 0
     ? imageUrls.fallbackUrl
-    : (imageUrls.useCloudinary && imageUrls.cloudinaryUrl 
-      ? imageUrls.cloudinaryUrl 
+    : (imageUrls.useCloudinary && imageUrls.cloudinaryUrl
+      ? imageUrls.cloudinaryUrl
       : imageUrls.localUrl);
 
   const [currentSrc, setCurrentSrc] = useState<string>(initialSrc);
@@ -197,14 +197,14 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     if (fallbackLevel === 0) {
       // Try local WebP if we were using Cloudinary, or Airtable if we were using local
       const nextSrc = imageUrls.useCloudinary ? imageUrls.localUrl : imageUrls.fallbackUrl;
-      console.log(`Image load failed, trying fallback level 1: ${nextSrc}`);
+      if (DEBUG) console.log(`Image load failed, trying fallback level 1: ${nextSrc}`);
       setFallbackLevel(1);
       setIsLoaded(false);
       setCurrentSrc(nextSrc);
     } else if (fallbackLevel === 1) {
       // Try final fallback (Airtable URL)
       if (currentSrc !== imageUrls.fallbackUrl) {
-        console.log(`Image load failed, trying final fallback: ${imageUrls.fallbackUrl}`);
+        if (DEBUG) console.log(`Image load failed, trying final fallback: ${imageUrls.fallbackUrl}`);
         setFallbackLevel(2);
         setIsLoaded(false);
         setCurrentSrc(imageUrls.fallbackUrl);

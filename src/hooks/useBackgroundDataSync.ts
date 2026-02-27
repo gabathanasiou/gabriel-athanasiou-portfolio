@@ -25,10 +25,10 @@ export const useBackgroundDataSync = (
     const checkForUpdates = async () => {
       try {
         const hasUpdates = await cmsService.checkForUpdates();
-        
+
         if (hasUpdates) {
-          console.log('[useBackgroundDataSync] Updates detected!');
-          
+          if (import.meta.env.DEV) console.log('[useBackgroundDataSync] Updates detected!');
+
           // Call optional callback
           if (onUpdateFound) {
             onUpdateFound();
@@ -36,11 +36,11 @@ export const useBackgroundDataSync = (
             // Default behavior: silently invalidate cache
             // Next navigation/refresh will fetch new data
             cmsService.invalidateCache();
-            console.log('[useBackgroundDataSync] Cache invalidated, new data will load on next navigation');
+            if (import.meta.env.DEV) console.log('[useBackgroundDataSync] Cache invalidated, new data will load on next navigation');
           }
         }
       } catch (error) {
-        console.warn('[useBackgroundDataSync] Update check failed:', error);
+        if (import.meta.env.DEV) console.warn('[useBackgroundDataSync] Update check failed:', error);
       }
     };
 

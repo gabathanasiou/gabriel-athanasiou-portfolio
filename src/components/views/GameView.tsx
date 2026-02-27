@@ -128,13 +128,13 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
     // ========================================================================
     // State Management
     // ========================================================================
-    
+
     /** Controls page fade-in animation */
     const [showContent, setShowContent] = useState(false);
-    
+
     /** Current score for this session (resets on page reload) */
     const [score, setScore] = useState(0);
-    
+
     /** 
      * High score persisted in localStorage
      * Initialized from localStorage on mount, falls back to 0
@@ -147,34 +147,34 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
             return 0;
         }
     });
-    
+
     /** Current game state (shuffling → playing → revealed) */
     const [gameState, setGameState] = useState<GameState>('shuffling');
-    
+
     /** The project being shown in the current round */
     const [currentProject, setCurrentProject] = useState<Project | null>(null);
-    
+
     /** URL of the current mystery image */
     const [currentImageUrl, setCurrentImageUrl] = useState('');
-    
+
     /** Array of 3 answer options (1 correct + 2 wrong) */
     const [answers, setAnswers] = useState<Project[]>([]);
-    
+
     /** ID of the selected answer (null until user clicks) */
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-    
+
     /** Whether to show confetti animation (on correct answer) */
     const [showConfetti, setShowConfetti] = useState(false);
-    
+
     /** Whether the current score just became a new high score */
     const [isNewHighScore, setIsNewHighScore] = useState(false);
-    
+
     /** Total number of rounds played in current session */
     const [roundsPlayed, setRoundsPlayed] = useState(0);
-    
+
     /** Set of image URLs that have been shown (for cycling) */
     const [usedImages, setUsedImages] = useState<Set<string>>(new Set());
-    
+
     /**
      * Ref to track used images without stale closure issues
      * Needed because startNewRound callback captures state at creation time
@@ -189,7 +189,7 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
      * Projects eligible for the game (must have gallery images)
      * Memoized to avoid recomputing on every render
      */
-    const eligibleProjects = useMemo(() => 
+    const eligibleProjects = useMemo(() =>
         projects.filter(p => p.gallery && p.gallery.length > 0),
         [projects]
     );
@@ -198,19 +198,21 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
      * Total number of images across all eligible projects
      * Used for debugging and potentially for progress display
      */
-    const totalImages = useMemo(() => 
+    const totalImages = useMemo(() =>
         eligibleProjects.reduce((sum, p) => sum + p.gallery.length, 0),
         [eligibleProjects]
     );
 
     // Debug: Log gallery counts on mount
     useEffect(() => {
-        console.log('🎮 Game View - Gallery Stats:');
-        console.log(`Total eligible projects: ${eligibleProjects.length}`);
-        console.log(`Total images across all galleries: ${totalImages}`);
-        eligibleProjects.forEach(p => {
-            console.log(`  - "${p.title}": ${p.gallery.length} images`);
-        });
+        if (import.meta.env.DEV) {
+            console.log('🎮 Game View - Gallery Stats:');
+            console.log(`Total eligible projects: ${eligibleProjects.length}`);
+            console.log(`Total images across all galleries: ${totalImages}`);
+            eligibleProjects.forEach(p => {
+                console.log(`  - "${p.title}": ${p.gallery.length} images`);
+            });
+        }
     }, [eligibleProjects, totalImages]);
 
     /** Whether the game can be played (need at least 3 eligible projects) */
@@ -255,7 +257,7 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
             setIsNewHighScore(true);
             // Play high score celebration sound with slight delay
             setTimeout(() => gameSounds.playHighScore(), 200);
-            
+
             // Track new high score event
             analyticsService.trackEvent('game_high_score', {
                 new_high_score: score,
@@ -263,7 +265,7 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
                 rounds_played: roundsPlayed,
                 timestamp: new Date().toISOString(),
             });
-            
+
             try {
                 localStorage.setItem('game_highScore', score.toString());
             } catch {
@@ -296,33 +298,37 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
         setSelectedAnswer(null);
         setShowConfetti(false);
         setIsNewHighScore(false);
-        
+
         // Play shuffle sound
         gameSounds.playShuffle();
 
         const timer = setTimeout(() => {
             // Use the ref to get the current used images (avoids stale closure)
             const currentUsedImages = usedImagesRef.current;
-            
-            console.log('🎮 Starting new round...');
-            console.log('  Used images so far:', currentUsedImages.size, Array.from(currentUsedImages));
-            
+
+            if (import.meta.env.DEV) {
+                console.log('🎮 Starting new round...');
+                console.log('  Used images so far:', currentUsedImages.size, Array.from(currentUsedImages));
+            }
+
             // Get projects that still have unused images
             // We track by "projectId-index" format
-            let projectsWithUnusedImages = eligibleProjects.filter(p => 
+            let projectsWithUnusedImages = eligibleProjects.filter(p =>
                 p.gallery.some((_, idx) => !currentUsedImages.has(`${p.id}-${idx}`))
             );
-            
-            console.log('  Projects with unused images:', projectsWithUnusedImages.length);
-            
+
+            if (import.meta.env.DEV) {
+                console.log('  Projects with unused images:', projectsWithUnusedImages.length);
+            }
+
             // If all images have been used, reset the used images set
             if (projectsWithUnusedImages.length === 0) {
-                console.log('  ⚠️ All images used, resetting...');
+                if (import.meta.env.DEV) console.log('  ⚠️ All images used, resetting...');
                 usedImagesRef.current = new Set();
                 setUsedImages(new Set());
                 projectsWithUnusedImages = eligibleProjects;
             }
-            
+
             // Weight selection by number of unused images - projects with more unused images
             // are more likely to be selected, ensuring we cycle through all images fairly
             const weightedProjects: Project[] = [];
@@ -333,38 +339,40 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
                     weightedProjects.push(p);
                 }
             });
-            
+
             // Pick a random project from the weighted list
             const correct = pickRandomProject(weightedProjects.length > 0 ? weightedProjects : projectsWithUnusedImages);
-            
-            console.log('  Selected project:', correct.title);
-            console.log('  Project gallery:', correct.gallery);
-            console.log('  Gallery length:', correct.gallery.length);
-            
+
+            if (import.meta.env.DEV) {
+                console.log('  Selected project:', correct.title);
+                console.log('  Project gallery:', correct.gallery);
+                console.log('  Gallery length:', correct.gallery.length);
+            }
+
             // Get unused image indices from this project
             // We track used images by "projectId-index" to work with both Airtable and Cloudinary URLs
             const availableIndices = correct.gallery
                 .map((_, idx) => idx)
                 .filter(idx => !usedImagesRef.current.has(`${correct.id}-${idx}`));
-            console.log('  Available (unused) indices:', availableIndices.length, availableIndices);
-            
+            if (import.meta.env.DEV) console.log('  Available (unused) indices:', availableIndices.length, availableIndices);
+
             // If all images used, reset for this project
             let selectedIndex: number;
             if (availableIndices.length === 0) {
-                console.log('  ⚠️ No available images, picking random index');
+                if (import.meta.env.DEV) console.log('  ⚠️ No available images, picking random index');
                 selectedIndex = Math.floor(Math.random() * correct.gallery.length);
             } else {
                 selectedIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
             }
-            console.log('  Selected index:', selectedIndex);
-            
+            if (import.meta.env.DEV) console.log('  Selected index:', selectedIndex);
+
             // Mark this image as used (update both ref and state)
             const usedKey = `${correct.id}-${selectedIndex}`;
             usedImagesRef.current = new Set([...usedImagesRef.current, usedKey]);
             setUsedImages(new Set(usedImagesRef.current));
-            
-            console.log('  Updated used images count:', usedImagesRef.current.size);
-            
+
+            if (import.meta.env.DEV) console.log('  Updated used images count:', usedImagesRef.current.size);
+
             const wrongOptions = pickRandomN(
                 eligibleProjects.filter(p => p.id !== correct.id),
                 2
@@ -372,22 +380,22 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
             const shuffledAnswers = shuffle([correct, ...wrongOptions]);
 
             setCurrentProject(correct);
-            
+
             // Build the image URL - prefer Cloudinary if enabled, fallback to gallery URL
             const preset = getSessionPreset();
             let optimizedImageUrl: string;
-            
+
             if (isCloudinaryEnabled()) {
                 // Use Cloudinary URL with preset transformations
                 optimizedImageUrl = buildCloudinaryUrl(correct.id, 'project', selectedIndex, { preset });
-                console.log('  Using Cloudinary URL with preset:', preset);
+                if (import.meta.env.DEV) console.log('  Using Cloudinary URL with preset:', preset);
             } else {
                 // Fall back to original gallery URL (Airtable)
                 optimizedImageUrl = correct.gallery[selectedIndex];
-                console.log('  Using fallback gallery URL (Cloudinary disabled)');
+                if (import.meta.env.DEV) console.log('  Using fallback gallery URL (Cloudinary disabled)');
             }
-            console.log('  Final image URL:', optimizedImageUrl.substring(0, 80) + '...');
-            
+            if (import.meta.env.DEV) console.log('  Final image URL:', optimizedImageUrl.substring(0, 80) + '...');
+
             setCurrentImageUrl(optimizedImageUrl);
             setAnswers(shuffledAnswers);
             setGameState('playing');
@@ -436,7 +444,7 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
             setShowConfetti(true);
             // Delay sound slightly to sync with visual feedback
             setTimeout(() => gameSounds.playCorrect(), 100);
-            
+
             // Track correct answer
             analyticsService.trackEvent('game_correct_answer', {
                 project_id: currentProject.id,
@@ -446,7 +454,7 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
             });
         } else {
             setTimeout(() => gameSounds.playWrong(), 100);
-            
+
             // Track wrong answer
             analyticsService.trackEvent('game_wrong_answer', {
                 correct_project: currentProject?.title,
@@ -482,7 +490,7 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
      */
     const getButtonClasses = (project: Project) => {
         const baseClasses = 'px-6 py-4 min-w-[140px] text-sm font-medium rounded-lg transition-all duration-300 border-2';
-        
+
         if (gameState !== 'revealed') {
             return `${baseClasses} border-white/20 bg-white/5 text-white hover:bg-white/10 hover:border-white/40`;
         }
@@ -514,7 +522,7 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
                         Coming Soon
                     </h1>
                     <p className="text-gray-400 text-sm leading-relaxed">
-                        The trivia game requires at least 3 projects with gallery images. 
+                        The trivia game requires at least 3 projects with gallery images.
                         Check back soon!
                     </p>
                 </div>
@@ -543,7 +551,7 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
 
                 {/* Main Game Area - side by side on wider screens */}
                 <div className="flex flex-col lg:flex-row items-center lg:items-center justify-center gap-4 sm:gap-6 lg:gap-8 w-full mt-2 sm:mt-8">
-                    
+
                     {/* Trading Card */}
                     <div className="w-full max-w-[200px] sm:max-w-[240px] md:max-w-[260px] lg:max-w-[280px] xl:max-w-[300px] px-2 sm:px-0 flex-shrink-0">
                         <TradingCard
@@ -575,9 +583,8 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
                             </div>
                         </div>
                         {/* Answer Buttons - always rendered to prevent layout shift */}
-                        <div className={`grid grid-cols-1 gap-2 sm:gap-3 mb-3 w-full max-w-[280px] sm:max-w-[320px] lg:max-w-none mx-auto lg:mx-0 px-0 transition-opacity duration-500 overflow-visible ${
-                            gameState === 'shuffling' ? 'opacity-0 pointer-events-none' : 'opacity-100'
-                        }`}>
+                        <div className={`grid grid-cols-1 gap-2 sm:gap-3 mb-3 w-full max-w-[280px] sm:max-w-[320px] lg:max-w-none mx-auto lg:mx-0 px-0 transition-opacity duration-500 overflow-visible ${gameState === 'shuffling' ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                            }`}>
                             {answers.length > 0 ? answers.map((project) => (
                                 <button
                                     key={project.id}
@@ -586,12 +593,10 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
                                     className={`${getButtonClasses(project)} w-full h-[40px] sm:h-[44px] text-[11px] sm:text-xs leading-tight py-2 relative flex items-center justify-center`}
                                 >
                                     <span className="px-5 truncate max-w-[calc(100%-2rem)]">{project.title}</span>
-                                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 transition-opacity duration-200 ${
-                                        gameState === 'revealed' && project.id === currentProject?.id ? 'opacity-100' : 'opacity-0'
-                                    }`}>✓</span>
-                                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 transition-opacity duration-200 ${
-                                        gameState === 'revealed' && project.id === selectedAnswer && project.id !== currentProject?.id ? 'opacity-100' : 'opacity-0'
-                                    }`}>✗</span>
+                                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 transition-opacity duration-200 ${gameState === 'revealed' && project.id === currentProject?.id ? 'opacity-100' : 'opacity-0'
+                                        }`}>✓</span>
+                                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 transition-opacity duration-200 ${gameState === 'revealed' && project.id === selectedAnswer && project.id !== currentProject?.id ? 'opacity-100' : 'opacity-0'
+                                        }`}>✗</span>
                                 </button>
                             )) : (
                                 // Placeholder buttons to maintain layout during initial load
@@ -608,11 +613,10 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
                             <button
                                 onClick={startNewRound}
                                 disabled={gameState !== 'revealed'}
-                                className={`px-6 py-2 h-full text-xs font-medium text-white border border-white/30 rounded-lg transition-all duration-300 ${
-                                    gameState === 'revealed' 
-                                        ? 'opacity-100 hover:bg-white/10 hover:border-white/50' 
+                                className={`px-6 py-2 h-full text-xs font-medium text-white border border-white/30 rounded-lg transition-all duration-300 ${gameState === 'revealed'
+                                        ? 'opacity-100 hover:bg-white/10 hover:border-white/50'
                                         : 'opacity-0 pointer-events-none'
-                                }`}
+                                    }`}
                             >
                                 Next Round →
                             </button>
@@ -652,7 +656,7 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
                         title="Share on Twitter"
                         onClick={() => analyticsService.trackSocialShare('twitter', 'Game Score', 'https://directedbygabriel.com/game')}
                     >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
                     </a>
                     <a
                         href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://directedbygabriel.com/game')}&quote=${encodeURIComponent(`I scored ${score} on Gabriel's filmography trivia! Can you beat me?`)}`}
@@ -662,7 +666,7 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
                         title="Share on Facebook"
                         onClick={() => analyticsService.trackSocialShare('facebook', 'Game Score', 'https://directedbygabriel.com/game')}
                     >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
                     </a>
                     <a
                         href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://directedbygabriel.com/game')}`}
@@ -672,7 +676,7 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
                         title="Share on LinkedIn"
                         onClick={() => analyticsService.trackSocialShare('linkedin', 'Game Score', 'https://directedbygabriel.com/game')}
                     >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
                     </a>
                     <button
                         onClick={async () => {
@@ -693,8 +697,8 @@ export const GameView: React.FC<GameViewProps> = ({ projects }) => {
                     What the f is this?
                 </h2>
                 <p className="text-gray-400 text-sm leading-relaxed">
-                    Did you know? Gabriel is a big fan of video games and wanted to incorporate that passion 
-                    into his portfolio. Tests your knowledge of his projects 
+                    Did you know? Gabriel is a big fan of video games and wanted to incorporate that passion
+                    into his portfolio. Tests your knowledge of his projects
                     and filmography in a fun, interactive way!
                 </p>
             </div>

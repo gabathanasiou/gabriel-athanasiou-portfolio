@@ -4,7 +4,7 @@ import { calculateReadingTime } from './cmsService';
 
 // To use live data, you would generate a Long-Lived Access Token 
 // via the Instagram Basic Display API and add it to your environment variables.
-const INSTAGRAM_TOKEN = process.env.REACT_APP_INSTAGRAM_TOKEN || ""; 
+const INSTAGRAM_TOKEN = process.env.REACT_APP_INSTAGRAM_TOKEN || "";
 const INSTAGRAM_USER_ID = "me"; // Or specific ID if known
 
 // Mock data to simulate gab.ath feed structure immediately
@@ -36,7 +36,7 @@ const MOCK_INSTAGRAM_POSTS = [
 ];
 
 export const instagramService = {
-    
+
     fetchPosts: async (): Promise<BlogPost[]> => {
         try {
             let rawPosts = [];
@@ -45,32 +45,30 @@ export const instagramService = {
             if (INSTAGRAM_TOKEN) {
                 const fields = "id,caption,media_type,media_url,permalink,thumbnail_url,timestamp";
                 const response = await fetch(`https://graph.instagram.com/${INSTAGRAM_USER_ID}/media?fields=${fields}&access_token=${INSTAGRAM_TOKEN}&limit=6`);
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     rawPosts = data.data;
                 } else {
-                    console.warn("Instagram API Error, falling back to mock.");
+                    if (import.meta.env.DEV) console.warn("Instagram API Error, falling back to mock.");
                     rawPosts = MOCK_INSTAGRAM_POSTS;
                 }
             } else {
-                // 2. Use Mock Data (Simulation)
-                // console.log("No Instagram Token found. Using mock data.");
                 rawPosts = MOCK_INSTAGRAM_POSTS;
             }
 
             // 3. Process & Map to BlogPost
-            return rawPosts.map((post: any) => {
+            return rawPosts.map((post: { id: string; caption: string; timestamp: string; media_url: string; permalink: string; thumbnail_url?: string }) => {
                 // Clean Caption: Remove hashtags (#word) and trim
                 const rawCaption = post.caption || "";
-                
+
                 // Regex to find hashtags
                 const hashtagRegex = /#[a-z0-9_]+/gi;
-                
+
                 // Create a "Title" from the first sentence or first few words
                 const cleanCaption = rawCaption.replace(hashtagRegex, '').trim();
                 const title = cleanCaption.split('\n')[0].substring(0, 50) + (cleanCaption.length > 50 ? '...' : '');
-                
+
                 // Format content (newlines to <br>)
                 const content = cleanCaption.replace(/\n/g, '<br/>');
 
@@ -93,7 +91,6 @@ export const instagramService = {
                     externalUrl: post.permalink
                 } as BlogPost;
             });
-
         } catch (error) {
             console.error("Failed to fetch Instagram posts", error);
             return [];
