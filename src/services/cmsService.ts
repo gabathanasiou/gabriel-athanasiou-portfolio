@@ -204,34 +204,9 @@ export const cmsService = {
     },
 
     /**
-     * Check if there are updates available (non-blocking background check)
+     * Check if there are updates available (Obsolete: managed by standalone repo)
      */
     checkForUpdates: async (): Promise<boolean> => {
-        if (!cachedData) return false;
-
-        try {
-            const response = await fetch('/.netlify/functions/get-data', {
-                headers: { 'Accept': 'application/json' }
-            });
-
-            if (!response.ok) return false;
-
-            const newData = await response.json();
-            const lastUpdatedHeader = response.headers.get('X-Last-Updated');
-
-            // Simple check: compare data lengths
-            const hasUpdates =
-                newData.projects?.length !== cachedData.projects.length ||
-                newData.posts?.length !== cachedData.posts.length;
-
-            if (hasUpdates) {
-                if (import.meta.env.DEV) console.log('[cmsService] Updates detected');
-            }
-
-            return hasUpdates;
-        } catch (error) {
-            if (import.meta.env.DEV) console.warn('[cmsService] Update check failed:', error);
-            return false;
-        }
+        return false;
     }
 };

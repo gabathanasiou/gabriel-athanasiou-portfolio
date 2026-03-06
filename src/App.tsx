@@ -44,9 +44,7 @@ export default function App() {
   const location = useLocation();
   const previousPathnameRef = useRef(location.pathname);
 
-  // Enable background sync to check for updates every 30 minutes
-  // When updates are found, cache is invalidated and new data loads on next navigation
-  useBackgroundDataSync(true, 30);
+  // Background sync is now managed by the standalone data repository via jsDelivr cache-busting
 
   useEffect(() => {
     const init = async () => {
@@ -54,7 +52,7 @@ export default function App() {
         const result = await cmsService.fetchAll();
         setData(result);
         setLoading(false);
-        
+
         // Initialize Google Analytics if measurement ID is configured
         if (result.config?.gaMeasurementId) {
           analyticsService.init(result.config.gaMeasurementId);
@@ -95,13 +93,13 @@ export default function App() {
       <GlobalStyles config={data.config} />
       <Cursor activeImageUrl={hoveredImage.url} fallbackUrl={hoveredImage.fallback} />
       <Navigation showLinks={true} config={data.config} />
-      
+
       <div className={`bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased overflow-x-clip transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
         <main>
-        <Suspense fallback={
-          <div className="h-screen w-full bg-bg-main flex items-center justify-center overflow-hidden relative">
-            {/* Temporarily commented out page transition loading gradient */}
-            {/* {THEME.pageTransitions.loading.showText && (
+          <Suspense fallback={
+            <div className="h-screen w-full bg-bg-main flex items-center justify-center overflow-hidden relative">
+              {/* Temporarily commented out page transition loading gradient */}
+              {/* {THEME.pageTransitions.loading.showText && (
               <div className="text-white/20 tracking-widest text-xs uppercase animate-pulse relative z-10">
                 Loading...
               </div>
@@ -126,92 +124,92 @@ export default function App() {
                 }}
               />
             )} */}
-          </div>
-        }>
-          <PageTransition>
-            <Routes>
-              {/* ...existing code... */}
-              <Route path="/" element={
+            </div>
+          }>
+            <PageTransition>
+              <Routes>
+                {/* ...existing code... */}
+                <Route path="/" element={
                   <>
-                      <SEO config={data.config} />
-                      <HomeView 
-                          projects={data.projects} 
-                          posts={data.posts}
-                          config={data.config}
-                      />
-                  </>
-              } />
-              {/* ...existing code... */}
-              <Route path="/work" element={
-                  <>
-                      <SEO title={data.config?.workSectionLabel || "Filmography"} config={data.config} />
-                      <IndexView 
-                          projects={data.projects} 
-                          onHover={setHoveredImage}
-                          config={data.config}
-                      />
-                  </>
-              } />
-              {/* ...existing code... */}
-              <Route path="/work/:slug" element={
-                  <ProjectDetailView 
-                      allProjects={data.projects}
-                      allPosts={data.posts}
+                    <SEO config={data.config} />
+                    <HomeView
+                      projects={data.projects}
+                      posts={data.posts}
                       config={data.config}
+                    />
+                  </>
+                } />
+                {/* ...existing code... */}
+                <Route path="/work" element={
+                  <>
+                    <SEO title={data.config?.workSectionLabel || "Filmography"} config={data.config} />
+                    <IndexView
+                      projects={data.projects}
+                      onHover={setHoveredImage}
+                      config={data.config}
+                    />
+                  </>
+                } />
+                {/* ...existing code... */}
+                <Route path="/work/:slug" element={
+                  <ProjectDetailView
+                    allProjects={data.projects}
+                    allPosts={data.posts}
+                    config={data.config}
                   />
-              } />
-              {/* Journal routes - only render if hasJournal is true */}
-              {data.config?.hasJournal !== false && (
+                } />
+                {/* Journal routes - only render if hasJournal is true */}
+                {data.config?.hasJournal !== false && (
                   <Route path="/journal" element={
-                      <>
-                          <SEO title="Journal" config={data.config} />
-                          <BlogView posts={data.posts} />
-                      </>
+                    <>
+                      <SEO title="Journal" config={data.config} />
+                      <BlogView posts={data.posts} />
+                    </>
                   } />
-              )}
-              {data.config?.hasJournal !== false && (
+                )}
+                {data.config?.hasJournal !== false && (
                   <Route path="/journal/:slug" element={
-                      <BlogPostView 
-                          allPosts={data.posts}
-                          allProjects={data.projects}
-                          config={data.config}
-                      />
+                    <BlogPostView
+                      allPosts={data.posts}
+                      allProjects={data.projects}
+                      config={data.config}
+                    />
                   } />
-              )}
-              {/* ...existing code... */}
-              <Route path="/about" element={
-                   <>
-                      <SEO title="About" config={data.config} />
-                      <AboutView config={data.config} />
-                  </>
-              } />
-              <Route path="/game" element={
+                )}
+                {/* ...existing code... */}
+                <Route path="/about" element={
                   <>
-                      <SEO 
-                          title="Game" 
-                          description="Test your knowledge of Gabriel's filmography in this interactive trivia game. Can you guess the project from a single frame?"
-                          image="https://res.cloudinary.com/date24ay6/image/upload/v1764713493/Screenshot_2025-12-02_at_22.11.07_lwxwlh.jpg"
-                          config={data.config}
-                      />
-                      <GameView projects={data.projects} />
+                    <SEO title="About" config={data.config} />
+                    <AboutView config={data.config} />
                   </>
-              } />
-              {/* ...existing code... */}
+                } />
+                <Route path="/game" element={
+                  <>
+                    <SEO
+                      title="Game"
+                      description="Test your knowledge of Gabriel's filmography in this interactive trivia game. Can you guess the project from a single frame?"
+                      image="https://res.cloudinary.com/date24ay6/image/upload/v1764713493/Screenshot_2025-12-02_at_22.11.07_lwxwlh.jpg"
+                      config={data.config}
+                    />
+                    <GameView projects={data.projects} />
+                  </>
+                } />
+                {/* ...existing code... */}
 
-              {/* Fallback to Home */}
-              <Route path="*" element={
+                {/* Fallback to Home */}
+                <Route path="*" element={
                   <>
-                      <SEO config={data.config} />
-                      <HomeView 
-                          projects={data.projects} 
-                          posts={data.posts}
-                          config={data.config}
-                      />
+                    <SEO config={data.config} />
+                    <HomeView
+                      projects={data.projects}
+                      posts={data.posts}
+                      config={data.config}
+                    />
                   </>
-              } />
-            </Routes>
-          </PageTransition>
-        </Suspense>
+                } />
+              </Routes>
+            </PageTransition>
+          </Suspense>
         </main>
         {/* Footer - hidden on About page to avoid duplication */}
         {location.pathname !== '/about' && <Footer config={data.config} />}
