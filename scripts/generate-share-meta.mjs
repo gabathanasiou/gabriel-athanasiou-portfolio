@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORTFOLIO_MODE = process.env.PORTFOLIO_MODE || 'directing';
+const PORTFOLIO_MODE = process.env.VITE_PORTFOLIO_MODE || process.env.PORTFOLIO_MODE || 'directing';
 const OUTPUT_DIR = path.resolve(__dirname, '../public');
 
 /**
@@ -21,13 +21,13 @@ const OUTPUT_DIR = path.resolve(__dirname, '../public');
  */
 function loadPortfolioData() {
   const dataPath = path.join(OUTPUT_DIR, `portfolio-data-${PORTFOLIO_MODE}.json`);
-  
+
   if (!fs.existsSync(dataPath)) {
     console.error(`[share-meta] ❌ Portfolio data not found: ${dataPath}`);
     console.error(`[share-meta] ℹ️  Run 'PORTFOLIO_MODE=${PORTFOLIO_MODE} npm run build:data' first`);
     return null;
   }
-  
+
   try {
     const content = fs.readFileSync(dataPath, 'utf8');
     return JSON.parse(content);
@@ -57,7 +57,7 @@ function buildProjects(projects, defaultOgImage) {
  */
 function buildPosts(articles) {
   if (!articles || articles.length === 0) return [];
-  
+
   return articles.map(article => ({
     id: article.id,
     slug: article.slug,
@@ -72,20 +72,20 @@ function buildPosts(articles) {
 async function main() {
   try {
     console.log(`[share-meta] 🔄 Generating share metadata for portfolio mode: ${PORTFOLIO_MODE}...`);
-    
+
     const portfolioData = loadPortfolioData();
-    
+
     if (!portfolioData) {
       console.error('[share-meta] ❌ Cannot generate share metadata without portfolio data');
       process.exit(1);
     }
-    
+
     const { config, projects, articles } = portfolioData;
     const defaultOgImage = config.defaultOgImage || '';
-    
+
     const projectMeta = buildProjects(projects, defaultOgImage);
     const postMeta = config.hasJournal ? buildPosts(articles) : [];
-    
+
     const manifest = {
       generatedAt: new Date().toISOString(),
       portfolioId: config.portfolioId,
@@ -99,23 +99,23 @@ async function main() {
         seoDescription: config.seoDescription
       }
     };
-    
+
     const json = JSON.stringify(manifest, null, 2);
     const outputJson = path.join(OUTPUT_DIR, `share-meta-${PORTFOLIO_MODE}.json`);
     const outputHash = path.join(OUTPUT_DIR, `share-meta-${PORTFOLIO_MODE}.hash`);
-    
+
     if (!fs.existsSync(OUTPUT_DIR)) {
       fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     }
-    
+
     fs.writeFileSync(outputJson, json, 'utf8');
-    
+
     // Hash for deployment trigger detection
     const hash = createHash('sha256')
       .update(JSON.stringify(manifest.projects) + JSON.stringify(manifest.posts))
       .digest('hex');
     fs.writeFileSync(outputHash, hash, 'utf8');
-    
+
     console.log(`[share-meta] ✅ Generated: ${outputJson}`);
     console.log(`[share-meta]    - Domain: ${config.domain}`);
     console.log(`[share-meta]    - Projects: ${projectMeta.length}`);

@@ -7,7 +7,7 @@
  */
 
 const sitemapHandler = async (event, context) => {
-  const portfolioMode = process.env.PORTFOLIO_MODE || 'directing';
+  const portfolioMode = process.env.VITE_PORTFOLIO_MODE || process.env.PORTFOLIO_MODE || 'directing';
 
   // Construct jsDelivr URL for the pre-generated sitemap in the data repo (data branch)
   const sitemapUrl = `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${portfolioMode}/sitemap.xml`;

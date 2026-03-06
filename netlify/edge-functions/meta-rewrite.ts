@@ -274,8 +274,8 @@ export default async (request: Request, context: Context) => {
 
     const slug = pathname.split("/").filter(Boolean).pop() || "";
 
-    // Get portfolio mode from environment (set per Netlify site)
-    const portfolioMode = Deno.env.get("PORTFOLIO_MODE") || "directing";
+    // Get portfolio mode from environment (VITE_ prefix required for frontend, checking both for safety)
+    const portfolioMode = Deno.env.get("VITE_PORTFOLIO_MODE") || Deno.env.get("PORTFOLIO_MODE") || "directing";
 
     // Fetch portfolio data directly from Cloudinary (primary source)
     // As per architecture: static files are hosted on Cloudinary, not locally

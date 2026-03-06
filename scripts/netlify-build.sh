@@ -6,8 +6,8 @@
 
 set -e
 
-# Default to directing if not set
-PORTFOLIO_MODE="${PORTFOLIO_MODE:-directing}"
+# Check VITE_ version first (required for frontend) then standard version
+PORTFOLIO_MODE="${VITE_PORTFOLIO_MODE:-${PORTFOLIO_MODE:-directing}}"
 
 echo "=============================================="
 echo "🚀 Netlify Build Script"
