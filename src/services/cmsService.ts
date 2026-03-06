@@ -28,7 +28,40 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes client-side cache
 // ==========================================
 
 // jsDelivr CDN URL for static portfolio data (primary source)
-const PORTFOLIO_MODE = import.meta.env.VITE_PORTFOLIO_MODE || 'directing';
+// Detect portfolio mode dynamically based on domain, environment, or override
+const getPortfolioMode = (): string => {
+    // 1. URL Override (useful for testing both modes on one domain)
+    if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const modeParam = params.get('mode');
+        if (modeParam === 'directing' || modeParam === 'postproduction') {
+            return modeParam;
+        }
+    }
+
+    // 2. Build-time Environment Variable (Vite)
+    if (import.meta.env.VITE_PORTFOLIO_MODE) {
+        return import.meta.env.VITE_PORTFOLIO_MODE;
+    }
+
+    // 3. Runtime Domain Detection (Production Reliability)
+    if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname.toLowerCase();
+        // Check for Lemon Post / Post-Production domain
+        if (hostname.includes('lemonpost.studio') || hostname.includes('postproduction')) {
+            return 'postproduction';
+        }
+        // Check for Directed by Gabriel domain
+        if (hostname.includes('directedbygabriel.com') || hostname.includes('directing')) {
+            return 'directing';
+        }
+    }
+
+    // Default fallback
+    return 'directing';
+};
+
+const PORTFOLIO_MODE = getPortfolioMode();
 const JSDELIVR_DATA_URL = `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${PORTFOLIO_MODE}/portfolio-data.json`;
 const LOCAL_DATA_URL = `/portfolio-data.json`;
 
