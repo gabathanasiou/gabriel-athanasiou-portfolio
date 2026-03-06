@@ -20,7 +20,7 @@ const OUTPUT_DIR = path.resolve(__dirname, '../public');
  * Load portfolio data from the pre-generated JSON file
  */
 function loadPortfolioData() {
-  const dataPath = path.join(OUTPUT_DIR, `portfolio-data-${PORTFOLIO_MODE}.json`);
+  const dataPath = path.join(OUTPUT_DIR, PORTFOLIO_MODE, `portfolio-data.json`);
 
   if (!fs.existsSync(dataPath)) {
     console.error(`[share-meta] ❌ Portfolio data not found: ${dataPath}`);

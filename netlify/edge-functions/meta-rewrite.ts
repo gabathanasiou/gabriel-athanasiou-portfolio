@@ -277,12 +277,11 @@ export default async (request: Request, context: Context) => {
     // Get portfolio mode from environment (VITE_ prefix required for frontend, checking both for safety)
     const portfolioMode = Deno.env.get("VITE_PORTFOLIO_MODE") || Deno.env.get("PORTFOLIO_MODE") || "directing";
 
-    // Fetch portfolio data directly from Cloudinary (primary source)
-    // As per architecture: static files are hosted on Cloudinary, not locally
-    // Each portfolio has its own data file: portfolio-data-directing.json or portfolio-data-postproduction.json
-    const cloudinaryUrl = `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data-${portfolioMode}.json`;
-    console.log(`[meta-rewrite] Fetching from: ${cloudinaryUrl}`);
-    let portfolioRes = await fetch(cloudinaryUrl);
+    // Fetch portfolio data from jsDelivr (GitHub data branch)
+    // The new architecture hosts static JSON data in folder-based paths per portfolio
+    const dataUrl = `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${portfolioMode}/portfolio-data.json`;
+    console.log(`[meta-rewrite] Fetching from: ${dataUrl}`);
+    let portfolioRes = await fetch(dataUrl);
 
     if (portfolioRes.ok) {
       portfolioData = await portfolioRes.json();

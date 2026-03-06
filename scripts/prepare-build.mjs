@@ -17,11 +17,11 @@ const PORTFOLIO_MODE = process.env.VITE_PORTFOLIO_MODE || process.env.PORTFOLIO_
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
 
 const FILES_TO_COPY = [
-  { from: `portfolio-data-${PORTFOLIO_MODE}.json`, to: 'portfolio-data.json' },
-  { from: `sitemap-${PORTFOLIO_MODE}.xml`, to: 'sitemap.xml' },
+  { from: `${PORTFOLIO_MODE}/portfolio-data.json`, to: 'portfolio-data.json' },
+  { from: `${PORTFOLIO_MODE}/sitemap.xml`, to: 'sitemap.xml' },
+  { from: `${PORTFOLIO_MODE}/robots.txt`, to: 'robots.txt' },
   { from: `share-meta-${PORTFOLIO_MODE}.json`, to: 'share-meta.json' },
   { from: `share-meta-${PORTFOLIO_MODE}.hash`, to: 'share-meta.hash' },
-  { from: `robots-${PORTFOLIO_MODE}.txt`, to: 'robots.txt' },
 ];
 
 function copyFile(from, to) {
