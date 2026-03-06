@@ -57,28 +57,28 @@ function truncate(text: string, maxLength: number = 200): string {
 // Generate structured data (JSON-LD) for SEO
 function generateStructuredData(item: any, pathname: string, canonicalUrl: string, portfolioConfig?: any): string {
   const siteOrigin = new URL(canonicalUrl).origin;
-  
+
   // Get portfolio-specific owner info
   const ownerName = portfolioConfig?.navTitle || portfolioConfig?.siteTitle || "Portfolio Owner";
   const jobTitle = portfolioConfig?.portfolioId === 'postproduction' ? "Colorist & Editor" : "Director";
-  const socialLinks = portfolioConfig?.portfolioId === 'postproduction' 
+  const socialLinks = portfolioConfig?.portfolioId === 'postproduction'
     ? [] // Post-production portfolio may have different/no social links
     : [
-        "https://twitter.com/gab_ath",
-        "https://www.instagram.com/gab.ath",
-        "https://www.linkedin.com/in/gabathanasiou/",
-        "https://www.imdb.com/name/nm7048843/"
-      ];
-  
+      "https://twitter.com/gab_ath",
+      "https://www.instagram.com/gab.ath",
+      "https://www.linkedin.com/in/gabathanasiou/",
+      "https://www.imdb.com/name/nm7048843/"
+    ];
+
   if (pathname.startsWith("/work/")) {
     // Project: Movie or VideoObject schema
     const isNarrative = item.type === 'Narrative';
     const isCommercial = item.type === 'Commercial';
-    
+
     // Use most accurate date available (portfolio-data.json has releaseDate, workDate, year)
     const dateString = item.releaseDate || item.workDate || (item.year ? `${item.year}-01-01` : null);
     const isoDate = dateString ? (dateString.includes('T') ? dateString : `${dateString}T00:00:00Z`) : undefined;
-    
+
     const schema: any = {
       "@context": "https://schema.org",
       "@type": isNarrative ? "Movie" : "VideoObject",
@@ -88,12 +88,12 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
       "image": item.heroImage || item.image,
       "url": canonicalUrl,
     };
-    
+
     if (isoDate) {
       schema.dateCreated = isoDate;
       schema.uploadDate = isoDate;
     }
-    
+
     // Creator/Director information based on portfolio type
     if (portfolioConfig?.portfolioId === 'postproduction') {
       // For post-production, list as creator/contributor
@@ -118,7 +118,7 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
         schema.director.sameAs = socialLinks;
       }
     }
-    
+
     // Credits
     if (item.credits && item.credits.length > 0) {
       schema.credits = item.credits.map((credit: any) => ({
@@ -127,7 +127,7 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
         "name": credit.name
       }));
     }
-    
+
     // Production company
     if (item.productionCompany) {
       schema.productionCompany = {
@@ -135,7 +135,7 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
         "name": item.productionCompany
       };
     }
-    
+
     // Client/sponsor for commercials
     if (isCommercial && item.client) {
       schema.sponsor = {
@@ -143,23 +143,23 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
         "name": item.client
       };
     }
-    
+
     // Genre
     if (item.genre && item.genre.length > 0) {
       schema.genre = item.genre;
     }
-    
+
     // Awards
     if (item.awards && item.awards.length > 0) {
       schema.award = item.awards;
     }
-    
+
     // Video content
     if (item.videoUrl) {
       schema.contentUrl = item.videoUrl;
       schema.embedUrl = item.videoUrl;
     }
-    
+
     // Gallery images
     if (item.gallery && item.gallery.length > 0) {
       schema.thumbnail = item.gallery.map((img: string) => ({
@@ -167,15 +167,15 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
         "url": img
       }));
     }
-    
+
     return JSON.stringify(schema);
-    
+
   } else if (pathname.startsWith("/journal/")) {
     // Blog Post: Article schema
-    const publishDate = item.date 
+    const publishDate = item.date
       ? (item.date.includes('T') ? item.date : `${item.date}T00:00:00Z`)
       : undefined;
-    
+
     const authorSchema: any = {
       "@type": "Person",
       "name": ownerName,
@@ -185,7 +185,7 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
     if (socialLinks.length > 0) {
       authorSchema.sameAs = socialLinks;
     }
-    
+
     const schema: any = {
       "@context": "https://schema.org",
       "@type": "Article",
@@ -199,18 +199,18 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
         "name": ownerName
       }
     };
-    
+
     if (publishDate) {
       schema.datePublished = publishDate;
     }
-    
+
     if (item.tags && item.tags.length > 0) {
       schema.keywords = item.tags.join(', ');
     }
-    
+
     return JSON.stringify(schema);
   }
-  
+
   // Default Person/Organization schema for homepage or other pages
   const personSchema: any = {
     "@context": "https://schema.org",
@@ -219,17 +219,17 @@ function generateStructuredData(item: any, pathname: string, canonicalUrl: strin
     "url": canonicalUrl,
     "jobTitle": jobTitle
   };
-  
+
   if (portfolioConfig?.portfolioId === 'postproduction') {
     personSchema.areaServed = portfolioConfig?.location || [];
   } else {
     personSchema.areaServed = ["London", "Athens"];
   }
-  
+
   if (socialLinks.length > 0) {
     personSchema.sameAs = socialLinks;
   }
-  
+
   return JSON.stringify(personSchema);
 }
 
@@ -238,7 +238,7 @@ export default async (request: Request, context: Context) => {
   const pathname = url.pathname;
 
   // Process all main routes for OG tags
-  const shouldProcess = 
+  const shouldProcess =
     pathname === '/' ||
     pathname === '/work' ||
     pathname === '/about' ||
@@ -258,84 +258,103 @@ export default async (request: Request, context: Context) => {
     const response = await context.next();
     let html = await response.text();
 
-  // Load manifest from Cloudinary (primary source of truth)
-  // portfolio-data.json has complete data, share-meta.json is lightweight fallback
-  let item: any = undefined; // Full item with all fields for structured data
-  const ULTIMATE_FALLBACK = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200";
-  let defaultOgImage = ULTIMATE_FALLBACK;
-  let portfolioData: any = null;
-  
-  // Portfolio-specific branding (will be populated from config)
-  let siteName = "Portfolio";
-  let siteTitle = "Portfolio";
-  let siteDescription = "Creative portfolio";
-  let ownerName = "";
-  let twitterHandle = "";
-  
-  const slug = pathname.split("/").filter(Boolean).pop() || "";
-  
-  // Get portfolio mode from environment (set per Netlify site)
-  const portfolioMode = Deno.env.get("PORTFOLIO_MODE") || "directing";
-  
-  // Fetch portfolio data directly from Cloudinary (primary source)
-  // As per architecture: static files are hosted on Cloudinary, not locally
-  // Each portfolio has its own data file: portfolio-data-directing.json or portfolio-data-postproduction.json
-  const cloudinaryUrl = `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data-${portfolioMode}.json`;
-  console.log(`[meta-rewrite] Fetching from: ${cloudinaryUrl}`);
-  let portfolioRes = await fetch(cloudinaryUrl);
-  
-  if (portfolioRes.ok) {
-    portfolioData = await portfolioRes.json();
-    
-    // Get portfolio-specific config for OG tags
-    const config = portfolioData.config || {};
-    siteName = config.navTitle || config.siteTitle || siteName;
-    siteTitle = config.seoTitle || `${siteName} | ${config.portfolioId === 'postproduction' ? 'Post-Production' : 'Director'}`;
-    siteDescription = config.seoDescription || siteDescription;
-    ownerName = config.navTitle || siteName;
-    twitterHandle = config.twitterHandle || (config.portfolioId === 'postproduction' ? '' : '@gabrielcine');
-    
-    // Get default OG image from config
-    if (config.defaultOgImage) {
-      defaultOgImage = config.defaultOgImage;
+    // Load manifest from Cloudinary (primary source of truth)
+    // portfolio-data.json has complete data, share-meta.json is lightweight fallback
+    let item: any = undefined; // Full item with all fields for structured data
+    const ULTIMATE_FALLBACK = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200";
+    let defaultOgImage = ULTIMATE_FALLBACK;
+    let portfolioData: any = null;
+
+    // Portfolio-specific branding (will be populated from config)
+    let siteName = "Portfolio";
+    let siteTitle = "Portfolio";
+    let siteDescription = "Creative portfolio";
+    let ownerName = "";
+    let twitterHandle = "";
+
+    const slug = pathname.split("/").filter(Boolean).pop() || "";
+
+    // Get portfolio mode - prioritize URL param, then domain detection, then environment variable
+    const host = url.hostname.toLowerCase();
+    const modeParam = url.searchParams.get("mode");
+
+    let portfolioMode = modeParam || "";
+
+    // Domain-based detection (Production Reliability)
+    if (!portfolioMode) {
+      if (host.includes('lemonpost.studio') || host.includes('melonpost')) {
+        portfolioMode = "postproduction";
+      } else if (host.includes('directedbygabriel.com')) {
+        portfolioMode = "directing";
+      }
     }
-    
-    if (pathname.startsWith("/work/") && portfolioData.projects) {
-      item = portfolioData.projects.find((p: any) => p.slug === slug || p.id === slug);
-      console.log(`[meta-rewrite] Found project: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
-    } else if (pathname.startsWith("/journal/") && portfolioData.posts) {
-      item = portfolioData.posts.find((p: any) => p.slug === slug || p.id === slug);
-      console.log(`[meta-rewrite] Found post: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
+
+    // Final fallback to environment variable or "directing"
+    if (!portfolioMode) {
+      portfolioMode = Deno.env.get("PORTFOLIO_MODE") || "directing";
     }
-  } else {
-    console.log("[meta-rewrite] Failed to load portfolio data from Cloudinary, trying share-meta fallback");
-    
-    // Fallback to portfolio-specific share-meta.json from Cloudinary
-    const shareMetaCloudinaryUrl = `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/share-meta-${portfolioMode}.json`;
-    let shareMetaRes = await fetch(shareMetaCloudinaryUrl);
-    
-    // If Cloudinary fails, try local fallback
-    if (!shareMetaRes.ok) {
-      const shareMetaUrl = new URL("/share-meta.json", url.origin);
-      shareMetaRes = await fetch(shareMetaUrl.toString());
-    }
-    
-    if (shareMetaRes.ok) {
-      const shareMeta: ShareManifest = await shareMetaRes.json();
-      
-      if (pathname.startsWith("/work/") && shareMeta.projects) {
-        item = shareMeta.projects.find((p: any) => p.slug === slug || p.id === slug);
-        console.log(`[meta-rewrite] Found project in share-meta: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
-      } else if (pathname.startsWith("/journal/") && shareMeta.posts) {
-        item = shareMeta.posts.find((p: any) => p.slug === slug || p.id === slug);
-        console.log(`[meta-rewrite] Found post in share-meta: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
+
+    console.log(`[meta-rewrite] Mode: ${portfolioMode} (Host: ${host})`);
+
+    // Fetch portfolio data directly from Cloudinary (primary source)
+    // As per architecture: static files are hosted on Cloudinary, not locally
+    // Each portfolio has its own data file: portfolio-data-directing.json or portfolio-data-postproduction.json
+    const cloudinaryUrl = `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data-${portfolioMode}.json`;
+    console.log(`[meta-rewrite] Fetching from: ${cloudinaryUrl}`);
+    let portfolioRes = await fetch(cloudinaryUrl);
+
+    if (portfolioRes.ok) {
+      portfolioData = await portfolioRes.json();
+
+      // Get portfolio-specific config for OG tags
+      const config = portfolioData.config || {};
+      siteName = config.navTitle || config.siteTitle || siteName;
+      siteTitle = config.seoTitle || `${siteName} | ${config.portfolioId === 'postproduction' ? 'Post-Production' : 'Director'}`;
+      siteDescription = config.seoDescription || siteDescription;
+      ownerName = config.navTitle || siteName;
+      twitterHandle = config.twitterHandle || (config.portfolioId === 'postproduction' ? '' : '@gabrielcine');
+
+      // Get default OG image from config
+      if (config.defaultOgImage) {
+        defaultOgImage = config.defaultOgImage;
+      }
+
+      if (pathname.startsWith("/work/") && portfolioData.projects) {
+        item = portfolioData.projects.find((p: any) => p.slug === slug || p.id === slug);
+        console.log(`[meta-rewrite] Found project: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
+      } else if (pathname.startsWith("/journal/") && portfolioData.posts) {
+        item = portfolioData.posts.find((p: any) => p.slug === slug || p.id === slug);
+        console.log(`[meta-rewrite] Found post: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
       }
     } else {
-      console.log("[meta-rewrite] Failed to load share-meta.json");
-    }
-  }    // Build meta tags based on page type
+      console.log("[meta-rewrite] Failed to load portfolio data from Cloudinary, trying share-meta fallback");
+
+      // Fallback to portfolio-specific share-meta.json from Cloudinary
+      const shareMetaCloudinaryUrl = `https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/share-meta-${portfolioMode}.json`;
+      let shareMetaRes = await fetch(shareMetaCloudinaryUrl);
+
+      // If Cloudinary fails, try local fallback
+      if (!shareMetaRes.ok) {
+        const shareMetaUrl = new URL("/share-meta.json", url.origin);
+        shareMetaRes = await fetch(shareMetaUrl.toString());
+      }
+
+      if (shareMetaRes.ok) {
+        const shareMeta: ShareManifest = await shareMetaRes.json();
+
+        if (pathname.startsWith("/work/") && shareMeta.projects) {
+          item = shareMeta.projects.find((p: any) => p.slug === slug || p.id === slug);
+          console.log(`[meta-rewrite] Found project in share-meta: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
+        } else if (pathname.startsWith("/journal/") && shareMeta.posts) {
+          item = shareMeta.posts.find((p: any) => p.slug === slug || p.id === slug);
+          console.log(`[meta-rewrite] Found post in share-meta: ${item ? item.title : 'NOT FOUND'} (slug: ${slug})`);
+        }
+      } else {
+        console.log("[meta-rewrite] Failed to load share-meta.json");
+      }
+    }    // Build meta tags based on page type
     let meta;
-    
+
     if (item) {
       // Individual project or post
       let ogType = "website";
@@ -346,7 +365,7 @@ export default async (request: Request, context: Context) => {
         const projectType = (item as any).type || '';
         ogType = projectType === 'Narrative' ? "video.movie" : "video.other";
       }
-      
+
       meta = {
         title: escapeHtml(`${item.title} | ${siteName}`),
         description: escapeHtml(truncate(item.description || item.content || '', 200)),
@@ -358,7 +377,7 @@ export default async (request: Request, context: Context) => {
       const workLabel = portfolioData?.config?.workSectionLabel || 'Work';
       meta = {
         title: escapeHtml(`${workLabel} | ${siteName}`),
-        description: escapeHtml(portfolioData?.config?.portfolioId === 'postproduction' 
+        description: escapeHtml(portfolioData?.config?.portfolioId === 'postproduction'
           ? "Professional color grading, editing, and post-production services."
           : "Browse my collection of narrative films, commercials, music videos, and documentaries."),
         image: defaultOgImage,
@@ -404,7 +423,7 @@ export default async (request: Request, context: Context) => {
 
     // Generate structured data (JSON-LD) for SEO - pass portfolio config for proper branding
     const portfolioConfig = portfolioData?.config;
-    const structuredData = item 
+    const structuredData = item
       ? generateStructuredData(item, pathname, canonicalUrl, portfolioConfig)
       : generateStructuredData(null, pathname, canonicalUrl, portfolioConfig);
 
@@ -422,7 +441,7 @@ export default async (request: Request, context: Context) => {
     <meta property="og:image:alt" content="${escapeHtml(meta.title)}">
     <meta property="og:url" content="${canonicalUrl}">
     <meta property="og:site_name" content="${escapeHtml(siteName)}">`;
-    
+
     // Add type-specific OpenGraph tags
     if (meta.type === 'article' && item) {
       // Article-specific tags
@@ -449,13 +468,13 @@ export default async (request: Request, context: Context) => {
       }
       metaBlock += `
     <meta property="video:director" content="${escapeHtml(ownerName)}">`;
-      
+
       // Add video URL if available
       if ((item as any).videoUrl) {
         metaBlock += `
     <meta property="og:video" content="${escapeHtml((item as any).videoUrl)}">`;
       }
-      
+
       // Add video tags (project type)
       const projectType = (item as any).type || '';
       if (projectType) {
@@ -463,7 +482,7 @@ export default async (request: Request, context: Context) => {
     <meta property="video:tag" content="${escapeHtml(projectType)}">`;
       }
     }
-    
+
     // Continue with Twitter and other meta tags
     metaBlock += `
     <meta name="twitter:card" content="summary_large_image">
