@@ -7,27 +7,25 @@
  */
 
 const sitemapHandler = async (event, context) => {
-  // Get portfolio mode from environment (set per Netlify site)
   const portfolioMode = process.env.PORTFOLIO_MODE || 'directing';
-  const cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.VITE_CLOUDINARY_CLOUD_NAME || 'date24ay6';
-  
-  // Construct Cloudinary URL for the portfolio-specific sitemap
-  const sitemapUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/raw/upload/portfolio-static/sitemap-${portfolioMode}.xml`;
-  
-  console.log(`[sitemap] Fetching sitemap for portfolio: ${portfolioMode}`);
+
+  // Construct jsDelivr URL for the pre-generated sitemap in the data repo
+  const sitemapUrl = `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@main/${portfolioMode}/sitemap.xml`;
+
+  console.log(`[sitemap] Fetching fresh sitemap via jsDelivr: ${portfolioMode}`);
   console.log(`[sitemap] URL: ${sitemapUrl}`);
 
   try {
     // Fetch the pre-generated sitemap from Cloudinary
     const response = await fetch(sitemapUrl);
-    
+
     if (!response.ok) {
       console.error(`[sitemap] Failed to fetch from Cloudinary: ${response.status}`);
       throw new Error(`Cloudinary fetch failed: ${response.status}`);
     }
-    
+
     const sitemapXml = await response.text();
-    
+
     return {
       statusCode: 200,
       headers: {
@@ -40,12 +38,12 @@ const sitemapHandler = async (event, context) => {
 
   } catch (error) {
     console.error('[sitemap] Error fetching sitemap:', error);
-    
+
     // Return minimal sitemap on error
-    const fallbackDomain = portfolioMode === 'postproduction' 
-      ? 'https://lemonpost.studio' 
+    const fallbackDomain = portfolioMode === 'postproduction'
+      ? 'https://lemonpost.studio'
       : 'https://directedbygabriel.com';
-    
+
     return {
       statusCode: 200, // Return 200 even on error to avoid SEO penalties
       headers: {
