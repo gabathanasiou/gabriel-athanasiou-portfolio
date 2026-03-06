@@ -54,17 +54,17 @@ CLOUDINARY_API_SECRET=your_api_secret
 - **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Netlify deployment instructions
 
 ### Core Systems
-- [docs/CDN_CACHE_FINAL_IMPLEMENTATION.md](./docs/CDN_CACHE_FINAL_IMPLEMENTATION.md) - CDN caching architecture
-- [docs/CLOUDINARY_INTEGRATION.md](./docs/CLOUDINARY_INTEGRATION.md) - Cloudinary image optimization (production)
-- [docs/STATIC_FILES_HOSTING.md](./docs/STATIC_FILES_HOSTING.md) - Static files hosting with Cloudinary
-- [docs/DATA_SYNC_GUIDE.md](./docs/DATA_SYNC_GUIDE.md) - Manual data sync from Airtable
-- [IMAGE_OPTIMIZATION.md](./IMAGE_OPTIMIZATION.md) - Image optimization system
-- [docs/PROCEDURAL_THUMBNAILS.md](./docs/PROCEDURAL_THUMBNAILS.md) - Procedural artwork generation
+- [docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md) - Netlify deployment instructions
+- [docs/IMAGE_OPTIMIZATION.md](./docs/IMAGE_OPTIMIZATION.md) - Cloudinary image optimization architecture
+- [docs/INSTAGRAM_QUICK_REFERENCE.md](./docs/INSTAGRAM_QUICK_REFERENCE.md) - Instagram Studio app guide
 
-### Setup & Configuration
-- [docs/ENV_SETUP.md](./docs/ENV_SETUP.md) - Environment configuration
-- [docs/ANALYTICS_SETUP.md](./docs/ANALYTICS_SETUP.md) - Google Analytics setup
-- [docs/SEO_GUIDE.md](./docs/SEO_GUIDE.md) - SEO configuration
+### Data & Schema
+- **[Airtable Schema & Mapping](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** - Field-by-field mapping in the data repo
+- **[Data Sync Workflow](https://github.com/gabathanasiou/gabriel-portfolio-data/actions)** - Triggering fresh builds from Airtable
+
+### Archived Context
+- [archive_docs/IMPLEMENTATION_LOG.md](./archive_docs/IMPLEMENTATION_LOG.md) - Historical development logs
+- [archive_docs/CODEBASE_ORGANIZATION_PLAN.md](./archive_docs/CODEBASE_ORGANIZATION_PLAN.md) - Original restructuring plan
 
 **For AI Agents:** Read [AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md) entirely before making any changes.
 

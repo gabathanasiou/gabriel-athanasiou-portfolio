@@ -10,13 +10,13 @@ This project uses **Airtable** as a Headless CMS.
 ## Architecture
 1. The data is fetched via GitHub Actions (`sync-data.yml`) in the standalone **`gabriel-portfolio-data`** repository. The sync script makes a **single** batch of 5 API calls to Airtable, fetching all tables in parallel and producing JSON files for both portfolio modes (`directing` and `postproduction`).
 2. There is **no live fetching** from Airtable in the browser client. 
-3. Static files (`portfolio-data.json`, `sitemap.xml`, `robots.txt`) are generated and pushed directly to the `main` branch of `gabriel-portfolio-data`.
-4. The main frontend application (`gabriel-portfolio`) fetches these static data models dynamically using the **jsDelivr CDN** (e.g., `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@main/directing/portfolio-data.json`).
+3. Static files (`portfolio-data.json`, `sitemap.xml`, `robots.txt`) are generated and pushed directly to the dedicated **`data`** branch of `gabriel-portfolio-data`.
+4. The main frontend application (`gabriel-portfolio`) fetches these static data models dynamically using the **jsDelivr CDN** targeting the data branch (e.g., `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/directing/portfolio-data.json`).
 5. Type definitions remain in `src/types.ts` for safety (e.g., `Project`, `BlogPost`, `HomeConfig`).
 
 ## Schema Reference
-The full Airtable → Output field mapping is documented in **[SCHEMA.md](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** (Data Repo).
-The raw Airtable base schema (fetched from the Metadata API) is at **[airtable-schema.json](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/airtable-schema.json)** (Data Repo).
+The full Airtable → Output field mapping is documented in **[SCHEMA.md](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** (Data Repo `main` branch).
+**Note**: Raw schema metadata is **not** committed for security reasons as it contains sensitive business fields.
 
 ## Sync Pipeline
 The core sync logic lives in `gabriel-portfolio-data/scripts/lib/sync-logic.mjs`:

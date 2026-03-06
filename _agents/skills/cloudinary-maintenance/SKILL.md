@@ -9,22 +9,22 @@ This project utilizes **Cloudinary** as a CDN for dynamic media (portfolio image
 
 ## Architecture & Integration
 1. **Dynamic Images**: Airtable gallery images are uploaded to Cloudinary during the data sync. Frontend URLs are rewritten to proxy through Cloudinary, enabling on-demand optimizations (`q_auto,f_auto` presets based on user agent or network conditions).
-2. **Static Data**: The generated `.json`, `.xml`, and `.txt` files live in the `main` branch of `gabriel-portfolio-data` and are served via the jsDelivr CDN (not Cloudinary).
+2. **Static Data**: The generated `.json`, `.xml`, and `.txt` files are hosted on the dedicated **`data` branch** of `gabriel-portfolio-data` and served via the jsDelivr CDN.
 
 ## Sync Flow (Image Upload)
 
 The sync happens via `scripts/lib/sync-logic.mjs` in the **`gabriel-portfolio-data`** repository.
 
 ### Cache-First Strategy
-The sync uses a **cache-first approach** to avoid slow Cloudinary API checks:
+The sync uses a **cache-first approach** to avoid redundant Cloudinary API checks. In CI, the `cloudinary-mapping.json` is restored from the `data` branch before the sync runs:
 
-1. Load `cloudinary-mapping.json` — a local cache of `publicId + airtableId → cloudinaryUrl`
+1. Restore `cloudinary-mapping.json` from `@data` branch
 2. For each Airtable attachment:
    - **Cache hit** (same publicId + airtableId in mapping) → reuse instantly, **zero API calls**
    - **Cache miss** → check Cloudinary API via `checkImageExists(publicId)`
      - If exists → use existing URL
      - If not → upload via `uploadToCloudinary(airtableUrl, publicId)`
-3. Save updated `cloudinary-mapping.json`
+3. Save updated `cloudinary-mapping.json` to the `data` branch
 
 This means unchanged content syncs with **0 Cloudinary API calls** (~5 seconds total).
 
