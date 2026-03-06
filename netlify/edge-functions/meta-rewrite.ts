@@ -274,27 +274,8 @@ export default async (request: Request, context: Context) => {
 
     const slug = pathname.split("/").filter(Boolean).pop() || "";
 
-    // Get portfolio mode - prioritize URL param, then domain detection, then environment variable
-    const host = url.hostname.toLowerCase();
-    const modeParam = url.searchParams.get("mode");
-
-    let portfolioMode = modeParam || "";
-
-    // Domain-based detection (Production Reliability)
-    if (!portfolioMode) {
-      if (host.includes('lemonpost.studio') || host.includes('melonpost')) {
-        portfolioMode = "postproduction";
-      } else if (host.includes('directedbygabriel.com')) {
-        portfolioMode = "directing";
-      }
-    }
-
-    // Final fallback to environment variable or "directing"
-    if (!portfolioMode) {
-      portfolioMode = Deno.env.get("PORTFOLIO_MODE") || "directing";
-    }
-
-    console.log(`[meta-rewrite] Mode: ${portfolioMode} (Host: ${host})`);
+    // Get portfolio mode from environment (set per Netlify site)
+    const portfolioMode = Deno.env.get("PORTFOLIO_MODE") || "directing";
 
     // Fetch portfolio data directly from Cloudinary (primary source)
     // As per architecture: static files are hosted on Cloudinary, not locally

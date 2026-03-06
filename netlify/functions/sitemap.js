@@ -7,18 +7,7 @@
  */
 
 const sitemapHandler = async (event, context) => {
-  // Detect portfolio mode - prioritize domain detection for production reliability
-  const host = (event.headers.host || '').toLowerCase();
-  let portfolioMode = '';
-
-  if (host.includes('lemonpost.studio') || host.includes('melonpost')) {
-    portfolioMode = 'postproduction';
-  } else if (host.includes('directedbygabriel.com')) {
-    portfolioMode = 'directing';
-  } else {
-    // Fallback to environment variable
-    portfolioMode = process.env.PORTFOLIO_MODE || 'directing';
-  }
+  const portfolioMode = process.env.PORTFOLIO_MODE || 'directing';
 
   // Construct jsDelivr URL for the pre-generated sitemap in the data repo (data branch)
   const sitemapUrl = `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${portfolioMode}/sitemap.xml`;
