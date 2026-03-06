@@ -20,15 +20,23 @@ To maintain a clean codebase, specialized logic and guides have been abstracted 
 
 ## 🏗️ Core Architecture & Data Flow
 
-### The Headless CMS Pattern
-This project does **not** fetch data from Airtable during the runtime of the React application. It uses custom Node scripts at build time to query the CMS once, format the data, and compile static JSON payloads. 
-- **Fetch Logic**: GitHub Actions (or `npm run sync:both`) runs the server scripts which compile `portfolio-data-directing.json` and `portfolio-data-postproduction.json`.
-- **Media Delivery**: The Application never loads raw Airtable image URLs (they expire). Everything is rewritten to request optimized variants from Cloudinary (`q_auto,f_auto`, `webp`/`avif`). 
+### The Headless Data Repository
+This project uses a **decoupled, headless data architecture**. The UI repository does **not** contain the logic for fetching data from Airtable or processing media. 
+
+- **Data Repository**: [gabriel-portfolio-data](https://github.com/gabathanasiou/gabriel-portfolio-data)
+- **Source Data Schema**: See **[SCHEMA.md](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** in the data repository for the complete Airtable field mapping and data structures.
+- **Sync Pipeline**: A unified sync script in the data repo fetches all 5 Airtable tables once, syncs images to Cloudinary (cache-first), and generates the static JSON, Sitemap, and Robots.txt files.
+- **Consumption**: The frontend dynamically requests these JSON files via the **jsDelivr CDN**.
+
+See `_agents/skills/airtable-cms/SKILL.md` for the technical deep-dive into this flow.
+
+### Media Delivery
+The application never loads raw Airtable image URLs (they expire). Everything is synchronized to Cloudinary during the data sync process. The application utilizes `src/components/common/OptimizedImage.tsx` which constructs authorized the Cloudinary delivery URLs (`q_auto,f_auto`).
 
 ### The Technology Stack
 - **Frontend**: React 19.2 + Vite + React Router 6. Everything uses TypeScript (`src/types.ts`).
-- **Styling**: Tailwind CSS exclusively, governed by a global design token system located in `src/theme.ts`.
-- **Backend/CI**: Node.js scripts (`scripts/sync-data.mjs`), Edge Functions for SSR-like SEO injection (`netlify/edge-functions/meta-rewrite.ts`).
+- **Styling**: Vanilla CSS with custom design tokens in `src/theme.ts`. (Tailwind CSS has been removed/phased out in favor of the custom theme system).
+- **Backend/CI**: Handled exclusively in the data repository.
 
 ## 🚀 Deployment & CI/CD
 The project uses **Netlify** with environment variables dictating the mode. 

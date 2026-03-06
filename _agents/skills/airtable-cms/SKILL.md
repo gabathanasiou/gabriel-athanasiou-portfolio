@@ -15,8 +15,8 @@ This project uses **Airtable** as a Headless CMS.
 5. Type definitions remain in `src/types.ts` for safety (e.g., `Project`, `BlogPost`, `HomeConfig`).
 
 ## Schema Reference
-The full Airtable → Output field mapping is documented in **`gabriel-portfolio-data/docs/SCHEMA.md`**.
-The raw Airtable base schema (fetched from the Metadata API) is at **`gabriel-portfolio-data/docs/airtable-schema.json`**.
+The full Airtable → Output field mapping is documented in **[SCHEMA.md](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** (Data Repo).
+The raw Airtable base schema (fetched from the Metadata API) is at **[airtable-schema.json](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/airtable-schema.json)** (Data Repo).
 
 ## Sync Pipeline
 The core sync logic lives in `gabriel-portfolio-data/scripts/lib/sync-logic.mjs`:

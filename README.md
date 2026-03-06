@@ -12,26 +12,16 @@ npm install
 npm run dev
 ```
 
-## 🔧 Development
+## 🔄 Data Sync & Static Assets
 
-```bash
-npm run dev              # Start dev server
-npm run build            # Production build with image optimization
-npm run preview          # Preview production build
-npm run optimize:images  # Manually optimize images from Airtable
-npm run test:images      # Test Airtable image URLs
-npm run sync:static      # Sync static files to Cloudinary
-```
+This project uses a **headless data architecture**. Airtable fetching, image processing to Cloudinary, and generation of static files (JSON, Sitemaps, Robots.txt) are handled by the standalone [**`gabriel-portfolio-data`**](https://github.com/gabathanasiou/gabriel-portfolio-data) repository.
 
-## 🔄 Data Sync
+- **Data Source**: Fetched and published via the data repository.
+- **Consumption**: Content is served via the jsDelivr CDN directly into the frontend.
+- **Sync Trigger**: Handled in the data repository via GitHub Actions or Airtable Webhooks.
 
-Data syncing from Airtable is **manual only** to conserve API credits. To sync content:
+See the [Data Repository README](https://github.com/gabathanasiou/gabriel-portfolio-data) for sync instructions.
 
-1. Go to the repository's **Actions** tab on GitHub
-2. Select **"Manual Data Sync (Airtable + Deploy)"** workflow
-3. Click **"Run workflow"** to sync data and trigger deployment
-
-See [docs/DATA_SYNC_GUIDE.md](./docs/DATA_SYNC_GUIDE.md) for detailed instructions.
 
 ## 🌍 Environment Variables
 
@@ -52,10 +42,10 @@ CLOUDINARY_API_SECRET=your_api_secret
 ### 📘 Master Guide
 - **[AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md)** - Complete technical documentation (START HERE)
   - Project architecture and system design
-  - Data structures and Airtable schema
+  - Project architecture and system design
+  - **[Airtable Schema & Mapping](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** (Stored in Data Repo)
   - Environment setup and workflows
-  - Deployment and CI/CD processes
-  - Performance optimization
+
   - Troubleshooting guides
 - **[CHANGELOG.md](./CHANGELOG.md)** - Complete history of all changes
 
