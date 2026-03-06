@@ -25,16 +25,44 @@ const FILES_TO_COPY = [
 ];
 
 function copyFile(from, to) {
-  const srcPath = path.join(PUBLIC_DIR, from);
+  let srcPath = path.join(PUBLIC_DIR, from);
+  let resolvedFrom = from;
+
+  // Resilience: If folder-based path doesn't exist, try suffixed fallback for the major files
+  if (!fs.existsSync(srcPath)) {
+    if (from.includes('/portfolio-data.json')) {
+      const fallback = `portfolio-data-${PORTFOLIO_MODE}.json`;
+      const fallbackPath = path.join(PUBLIC_DIR, fallback);
+      if (fs.existsSync(fallbackPath)) {
+        srcPath = fallbackPath;
+        resolvedFrom = fallback;
+      }
+    } else if (from.includes('/sitemap.xml')) {
+      const fallback = `sitemap-${PORTFOLIO_MODE}.xml`;
+      const fallbackPath = path.join(PUBLIC_DIR, fallback);
+      if (fs.existsSync(fallbackPath)) {
+        srcPath = fallbackPath;
+        resolvedFrom = fallback;
+      }
+    } else if (from.includes('/robots.txt')) {
+      const fallback = `robots-${PORTFOLIO_MODE}.txt`;
+      const fallbackPath = path.join(PUBLIC_DIR, fallback);
+      if (fs.existsSync(fallbackPath)) {
+        srcPath = fallbackPath;
+        resolvedFrom = fallback;
+      }
+    }
+  }
+
   const destPath = path.join(PUBLIC_DIR, to);
 
   if (!fs.existsSync(srcPath)) {
-    console.warn(`[prepare-build] ⚠️  Source not found: ${from}`);
+    console.warn(`[prepare-build] ⚠️  Source not found: ${from} (and no fallback found)`);
     return false;
   }
 
   fs.copyFileSync(srcPath, destPath);
-  console.log(`[prepare-build] ✅ Copied: ${from} → ${to}`);
+  console.log(`[prepare-build] ✅ Copied: ${resolvedFrom} → ${to}`);
   return true;
 }
 

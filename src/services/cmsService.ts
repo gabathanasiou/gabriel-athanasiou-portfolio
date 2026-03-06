@@ -40,6 +40,10 @@ const getCacheBustedUrl = (baseUrl: string): string => {
     return `${baseUrl}${separator}_t=${timestamp}`;
 };
 
+console.log(`[cmsService] 🏁 Initialized in ${PORTFOLIO_MODE} mode`);
+console.log(`[cmsService] 🌍 CDN URL: ${JSDELIVR_DATA_URL}`);
+console.log(`[cmsService] 🏠 Local URL: ${LOCAL_DATA_URL}`);
+
 const fetchCachedData = async (): Promise<ApiResponse> => {
     // Check if cache is still valid
     if (cachedData && cacheTimestamp && Date.now() - cacheTimestamp < CACHE_DURATION) {
@@ -85,56 +89,67 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
             console.warn('[cmsService] ⚠️ jsDelivr fetch failed, trying local fallback:', jsdelivrError);
         }
 
-        // Fallback to local static file with cache-busting
+        // Fallback 1: Preferred local folder path (/${mode}/portfolio-data.json)
         try {
             const localUrl = getCacheBustedUrl(LOCAL_DATA_URL);
-            const response = await fetch(localUrl, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache'
-                },
-                cache: 'no-store'
-            });
+            if (import.meta.env.DEV) console.log(`[cmsService] 尝试本地回退 (文件夹路径): ${localUrl}`);
 
-            if (!response.ok) {
-                throw new Error(`Local fetch failed: ${response.statusText}`);
+            const response = await fetch(localUrl);
+
+            // Verify it's actually JSON and not an SPA fallback HTML page
+            const contentType = response.headers.get('content-type');
+            if (!response.ok || !contentType?.includes('application/json')) {
+                throw new Error(`Local fetch failed or returned non-JSON: ${response.status}`);
             }
 
             const data = await response.json();
+            return processLoadedData(data, '本地文件夹');
+        } catch (localFolderError) {
+            // Fallback 2: Legacy suffixed filename (/portfolio-data-${mode}.json)
+            try {
+                const legacyUrl = getCacheBustedUrl(`/portfolio-data-${PORTFOLIO_MODE}.json`);
+                if (import.meta.env.DEV) console.log(`[cmsService] 尝试本地回退 (后缀路径): ${legacyUrl}`);
 
-            cachedData = {
-                projects: data.projects || [],
-                posts: data.posts || [],
-                config: data.config || getDefaultConfig()
-            };
-            cacheTimestamp = Date.now();
+                const response = await fetch(legacyUrl);
+                const contentType = response.headers.get('content-type');
 
-            if (import.meta.env.DEV) {
-                console.log(`[cmsService] ✅ Loaded from local fallback: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
+                if (!response.ok || !contentType?.includes('application/json')) {
+                    throw new Error(`Legacy local fetch failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return processLoadedData(data, '本地后缀');
+            } catch (legacyError) {
+                console.error('[cmsService] ❌ All fetch attempts failed (jsDelivr, Local Folder, Legacy Suffix)');
+                console.error('jsDelivr error:', jsdelivrError);
+                console.error('Local folder error:', localFolderError);
+                console.error('Legacy suffix error:', legacyError);
+
+                if (cachedData) return cachedData;
+
+                return {
+                    projects: [],
+                    posts: [],
+                    config: getDefaultConfig()
+                };
             }
-
-            return cachedData;
-        } catch (localError) {
-            console.error('[cmsService] ❌ Both jsDelivr and local fetch failed');
-            console.error('jsDelivr error:', jsdelivrError);
-            console.error('Local error:', localError);
-
-            // If we have stale cache, return it
-            if (cachedData) {
-                if (import.meta.env.DEV) console.warn('[cmsService] Using stale cache due to fetch errors');
-                return cachedData;
-            }
-
-            // Last resort: return empty data with default config
-            if (import.meta.env.DEV) console.warn('[cmsService] No cache available, using default empty state');
-            return {
-                projects: [],
-                posts: [],
-                config: getDefaultConfig()
-            };
         }
     }
+};
+
+// Helper to handle data processing and logging
+const processLoadedData = (data: any, source: string): ApiResponse => {
+    cachedData = {
+        projects: data.projects || [],
+        posts: data.posts || [],
+        config: data.config || getDefaultConfig()
+    };
+    cacheTimestamp = Date.now();
+
+    console.log(`[cmsService] ✅ Loaded from ${source}: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
+    console.log(`[cmsService]    Portfolio ID from data: ${cachedData.config.portfolioId}`);
+
+    return cachedData;
 };
 
 // Default config fallback
