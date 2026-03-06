@@ -48,7 +48,7 @@ export function useProjects(options: UseProjectsOptions = {}): UseProjectsReturn
 
       if (!response.ok) {
         // Try alternative path for development
-        const altResponse = await fetch('../../public/portfolio-data-postproduction.json');
+        const altResponse = await fetch('../../public/postproduction/portfolio-data.json');
         if (!altResponse.ok) {
           throw new Error(`Failed to fetch portfolio data: ${response.status}`);
         }

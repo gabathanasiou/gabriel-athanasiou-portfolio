@@ -12,7 +12,8 @@ This project uses **Airtable** as a Headless CMS.
 2. There is **no live fetching** from Airtable in the browser client. 
 3. Static files (`portfolio-data.json`, `sitemap.xml`, `robots.txt`) are generated and pushed directly to the dedicated **`data`** branch of `gabriel-portfolio-data`.
 4. The main frontend application (`gabriel-portfolio`) fetches these static data models dynamically using the **jsDelivr CDN** targeting the data branch (e.g., `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/directing/portfolio-data.json`).
-5. Type definitions remain in `src/types.ts` for safety (e.g., `Project`, `BlogPost`, `HomeConfig`).
+5. **Caching Note**: jsDelivr ignores cache-busting query strings for GitHub files. To ensure immediate updates, the `sync-data.yml` GitHub Action manually purges the jsDelivr cache for the generated JSON files after every sync.
+6. Type definitions remain in `src/types.ts` for safety (e.g., `Project`, `BlogPost`, `HomeConfig`).
 
 ## Schema Reference
 The full Airtable → Output field mapping is documented in **[SCHEMA.md](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** (Data Repo `main` branch).
