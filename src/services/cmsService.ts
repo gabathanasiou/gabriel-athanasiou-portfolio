@@ -40,9 +40,11 @@ const getCacheBustedUrl = (baseUrl: string): string => {
     return `${baseUrl}${separator}_t=${timestamp}`;
 };
 
-console.log(`[cmsService] 🏁 Initialized in ${PORTFOLIO_MODE} mode`);
-console.log(`[cmsService] 🌍 CDN URL: ${JSDELIVR_DATA_URL}`);
-console.log(`[cmsService] 🏠 Local URL: ${LOCAL_DATA_URL}`);
+if (import.meta.env.DEV) {
+    console.log(`[cmsService] 🏁 Initialized in ${PORTFOLIO_MODE} mode`);
+    console.log(`[cmsService] 🌍 CDN URL: ${JSDELIVR_DATA_URL}`);
+    console.log(`[cmsService] 🏠 Local URL: ${LOCAL_DATA_URL}`);
+}
 
 const fetchCachedData = async (): Promise<ApiResponse> => {
     // Check if cache is still valid
@@ -58,11 +60,6 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
         if (import.meta.env.DEV) console.log('[cmsService] Fetching fresh data from jsDelivr CDN');
 
         const response = await fetch(freshUrl, {
-            headers: {
-                'Accept': 'application/json',
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache'
-            },
             cache: 'no-store' // Bypass browser cache
         });
 
@@ -92,7 +89,7 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
         // Fallback 1: Preferred local folder path (/${mode}/portfolio-data.json)
         try {
             const localUrl = getCacheBustedUrl(LOCAL_DATA_URL);
-            if (import.meta.env.DEV) console.log(`[cmsService] 尝试本地回退 (文件夹路径): ${localUrl}`);
+            if (import.meta.env.DEV) console.log(`[cmsService] Trying local fallback (folder path): ${localUrl}`);
 
             const response = await fetch(localUrl);
 
@@ -103,12 +100,12 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
             }
 
             const data = await response.json();
-            return processLoadedData(data, '本地文件夹');
+            return processLoadedData(data, 'Local Folder');
         } catch (localFolderError) {
             // Fallback 2: Legacy suffixed filename (/portfolio-data-${mode}.json)
             try {
                 const legacyUrl = getCacheBustedUrl(`/portfolio-data-${PORTFOLIO_MODE}.json`);
-                if (import.meta.env.DEV) console.log(`[cmsService] 尝试本地回退 (后缀路径): ${legacyUrl}`);
+                if (import.meta.env.DEV) console.log(`[cmsService] Trying local fallback (suffix path): ${legacyUrl}`);
 
                 const response = await fetch(legacyUrl);
                 const contentType = response.headers.get('content-type');
@@ -118,7 +115,7 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
                 }
 
                 const data = await response.json();
-                return processLoadedData(data, '本地后缀');
+                return processLoadedData(data, 'Local Suffix');
             } catch (legacyError) {
                 console.error('[cmsService] ❌ All fetch attempts failed (jsDelivr, Local Folder, Legacy Suffix)');
                 console.error('jsDelivr error:', jsdelivrError);
@@ -146,8 +143,10 @@ const processLoadedData = (data: any, source: string): ApiResponse => {
     };
     cacheTimestamp = Date.now();
 
-    console.log(`[cmsService] ✅ Loaded from ${source}: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
-    console.log(`[cmsService]    Portfolio ID from data: ${cachedData.config.portfolioId}`);
+    if (import.meta.env.DEV) {
+        console.log(`[cmsService] ✅ Loaded from ${source}: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
+        console.log(`[cmsService]    Portfolio ID from data: ${cachedData.config.portfolioId}`);
+    }
 
     return cachedData;
 };
