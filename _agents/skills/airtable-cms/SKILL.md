@@ -8,11 +8,11 @@ description: Understanding how data is fetched from Airtable and built staticall
 This project uses **Airtable** as a Headless CMS.
 
 ## Architecture
-1. The data is fetched via GitHub Actions (e.g., `sync-data.yml`) calling `npm run sync:both`. This script makes a **single** API request to Airtable to fetch content for both portfolio modes (`directing` and `postproduction`), drastically saving API credits.
+1. The data is fetched via GitHub Actions (`sync-data.yml`) in the standalone **`gabriel-portfolio-data`** repository. This script makes a **single** API request to Airtable to fetch content for both portfolio modes (`directing` and `postproduction`), drastically saving API credits.
 2. There is **no live fetching** from Airtable in the browser client. 
-3. Static files (`portfolio-data-directing.json`, `portfolio-data-postproduction.json`) are generated at build-time.
-4. Data is stored in `src/types.ts` for typings (e.g., `Project`, `BlogPost`, `HomeConfig`).
-5. After generation, the GitHub Action commits these JSON objects directly back into the repository `public/` folder, and syncs them to Cloudinary.
+3. Static files (`portfolio-data.json`, `sitemap.xml`) are generated via the webhook action and pushed directly to the `main` branch of `gabriel-portfolio-data`.
+4. The main frontend application (`gabriel-portfolio`) explicitly fetches these static data models dynamically using the blazing-fast **jsDelivr CDN** (e.g., `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@main/directing/portfolio-data.json`).
+5. Type definitions remain in `src/types.ts` for safety (e.g., `Project`, `BlogPost`, `HomeConfig`).
 
 ## Modifying Data Models
 When the Airtable schema changes (a column is added/removed):
@@ -22,4 +22,4 @@ When the Airtable schema changes (a column is added/removed):
 
 ## Triggering Data Sync
 Data syncing from Airtable is strictly manual to prevent abuse limits.
-Run `npm run sync:both` locally, or through GitHub Actions using the manual `workflow_dispatch` trigger.
+This is triggered either through a Webhook emitted from Airtable directly to the `gabriel-portfolio-data` GitHub Action, or manually triggered via the `workflow_dispatch` trigger in that repository's Actions tab.

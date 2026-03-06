@@ -27,11 +27,10 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes client-side cache
 // DATA FETCHING FROM CLOUDINARY CDN
 // ==========================================
 
-// Cloudinary CDN URL for static portfolio data (primary source)
-const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'date24ay6';
+// jsDelivr CDN URL for static portfolio data (primary source)
 const PORTFOLIO_MODE = import.meta.env.VITE_PORTFOLIO_MODE || 'directing';
-const CLOUDINARY_DATA_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/raw/upload/portfolio-static/portfolio-data-${PORTFOLIO_MODE}.json`;
-const LOCAL_DATA_URL = `/portfolio-data-${PORTFOLIO_MODE}.json`;
+const JSDELIVR_DATA_URL = `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@main/${PORTFOLIO_MODE}/portfolio-data.json`;
+const LOCAL_DATA_URL = `/portfolio-data.json`;
 
 // Generate cache-busting URL with timestamp
 const getCacheBustedUrl = (baseUrl: string): string => {
@@ -47,11 +46,11 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
         return cachedData;
     }
 
-    // Try Cloudinary CDN first (primary source)
+    // Try jsDelivr CDN first (primary source)
     try {
         // Add timestamp to bypass CDN cache and get fresh data
-        const freshUrl = getCacheBustedUrl(CLOUDINARY_DATA_URL);
-        if (import.meta.env.DEV) console.log('[cmsService] Fetching fresh data from Cloudinary CDN');
+        const freshUrl = getCacheBustedUrl(JSDELIVR_DATA_URL);
+        if (import.meta.env.DEV) console.log('[cmsService] Fetching fresh data from jsDelivr CDN');
 
         const response = await fetch(freshUrl, {
             headers: {
@@ -76,13 +75,13 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
         cacheTimestamp = Date.now();
 
         if (import.meta.env.DEV) {
-            console.log(`[cmsService] ✅ Loaded from Cloudinary: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
+            console.log(`[cmsService] ✅ Loaded from jsDelivr: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
         }
 
         return cachedData;
-    } catch (cloudinaryError) {
+    } catch (jsdelivrError) {
         if (import.meta.env.DEV) {
-            console.warn('[cmsService] ⚠️ Cloudinary fetch failed, trying local fallback:', cloudinaryError);
+            console.warn('[cmsService] ⚠️ jsDelivr fetch failed, trying local fallback:', jsdelivrError);
         }
 
         // Fallback to local static file with cache-busting
@@ -116,8 +115,8 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
 
             return cachedData;
         } catch (localError) {
-            console.error('[cmsService] ❌ Both Cloudinary and local fetch failed');
-            console.error('Cloudinary error:', cloudinaryError);
+            console.error('[cmsService] ❌ Both jsDelivr and local fetch failed');
+            console.error('jsDelivr error:', jsdelivrError);
             console.error('Local error:', localError);
 
             // If we have stale cache, return it

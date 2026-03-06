@@ -65,12 +65,6 @@ targetPort = 3000
 port = 8888
 autoLaunch = false
 
-# Redirect /sitemap.xml to the dynamic sitemap function
-[[redirects]]
-from = "/sitemap.xml"
-to = "/.netlify/functions/sitemap"
-status = 200
-force = true
 
 # SPA fallback - the edge function will intercept specific routes via its config export
 [[redirects]]
