@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Project, PortfolioData } from '../types';
 
-// Fetch from Cloudinary CDN for fresh data (not stale Netlify-deployed files)
-const PORTFOLIO_DATA_URL = 'https://res.cloudinary.com/date24ay6/raw/upload/portfolio-static/portfolio-data-postproduction.json';
+// Fetch from jsDelivr CDN targeting the data branch for fresh data
+const PORTFOLIO_DATA_URL = 'https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/postproduction/portfolio-data.json';
 
 interface UseProjectsOptions {
   filterType?: string;
@@ -45,7 +45,7 @@ export function useProjects(options: UseProjectsOptions = {}): UseProjectsReturn
     try {
       // Try to fetch from public folder (served by vite)
       const response = await fetch(PORTFOLIO_DATA_URL);
-      
+
       if (!response.ok) {
         // Try alternative path for development
         const altResponse = await fetch('../../public/portfolio-data-postproduction.json');
