@@ -43,8 +43,8 @@ CLOUDINARY_API_SECRET=your_api_secret
 - **[AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md)** - Complete technical documentation (START HERE)
   - Project architecture and system design
   - Project architecture and system design
-  - **[Airtable Schema & Mapping](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** (Stored in Data Repo)
-  - Environment setup and workflows
+  - **[Airtable Schema & Mapping](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** (Stored in Data Repo `main` branch)
+  - **[Production Build Artifacts](https://github.com/gabathanasiou/gabriel-portfolio-data/tree/data)** (Stored in Data Repo `data` branch)
 
   - Troubleshooting guides
 - **[CHANGELOG.md](./CHANGELOG.md)** - Complete history of all changes

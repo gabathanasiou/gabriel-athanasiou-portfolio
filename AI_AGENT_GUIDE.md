@@ -24,9 +24,9 @@ To maintain a clean codebase, specialized logic and guides have been abstracted 
 This project uses a **decoupled, headless data architecture**. The UI repository does **not** contain the logic for fetching data from Airtable or processing media. 
 
 - **Data Repository**: [gabriel-portfolio-data](https://github.com/gabathanasiou/gabriel-portfolio-data)
-- **Source Data Schema**: See **[SCHEMA.md](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** in the data repository for the complete Airtable field mapping and data structures.
-- **Sync Pipeline**: A unified sync script in the data repo fetches all 5 Airtable tables once, syncs images to Cloudinary (cache-first), and generates the static JSON, Sitemap, and Robots.txt files.
-- **Consumption**: The frontend dynamically requests these JSON files via the **jsDelivr CDN**.
+- **Source Data Schema**: See **[SCHEMA.md](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** in the data repository (`main` branch) for the complete field mapping.
+- **Sync Pipeline**: A unified sync script in the data repo fetches Airtable once and pushes generated artifacts (JSON, Sitemaps, Robots.txt) to the dedicated **`data` branch**.
+- **Consumption**: The frontend dynamically requests these files via the **jsDelivr CDN** targeting the `@data` branch version.
 
 See `_agents/skills/airtable-cms/SKILL.md` for the technical deep-dive into this flow.
 

@@ -41,8 +41,8 @@ esac
 echo "=============================================="
 echo "🔗 Generating dynamic CDN proxy redirects..."
 echo "=============================================="
-echo "/sitemap.xml    https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@main/${PORTFOLIO_MODE}/sitemap.xml   200" >> dist/_redirects
-echo "/robots.txt     https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@main/${PORTFOLIO_MODE}/robots.txt    200" >> dist/_redirects
+echo "/sitemap.xml    https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${PORTFOLIO_MODE}/sitemap.xml   200" >> dist/_redirects
+echo "/robots.txt     https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${PORTFOLIO_MODE}/robots.txt    200" >> dist/_redirects
 echo "✅ Appended to dist/_redirects"
 echo "=============================================="
 echo "✅ Build complete for: $PORTFOLIO_MODE"

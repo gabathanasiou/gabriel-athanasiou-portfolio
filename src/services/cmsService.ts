@@ -29,7 +29,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes client-side cache
 
 // jsDelivr CDN URL for static portfolio data (primary source)
 const PORTFOLIO_MODE = import.meta.env.VITE_PORTFOLIO_MODE || 'directing';
-const JSDELIVR_DATA_URL = `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@main/${PORTFOLIO_MODE}/portfolio-data.json`;
+const JSDELIVR_DATA_URL = `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${PORTFOLIO_MODE}/portfolio-data.json`;
 const LOCAL_DATA_URL = `/portfolio-data.json`;
 
 // Generate cache-busting URL with timestamp
