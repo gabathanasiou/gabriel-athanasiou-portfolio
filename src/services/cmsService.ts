@@ -48,7 +48,7 @@ const getPortfolioMode = (): string => {
     if (typeof window !== 'undefined') {
         const hostname = window.location.hostname.toLowerCase();
         // Check for Lemon Post / Post-Production domain
-        if (hostname.includes('lemonpost.studio') || hostname.includes('postproduction')) {
+        if (hostname.includes('lemonpost.studio') || hostname.includes('postproduction') || hostname.includes('melonpost')) {
             return 'postproduction';
         }
         // Check for Directed by Gabriel domain
