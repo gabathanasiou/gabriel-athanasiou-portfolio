@@ -102,34 +102,17 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
             const data = await response.json();
             return processLoadedData(data, 'Local Folder');
         } catch (localFolderError) {
-            // Fallback 2: Legacy suffixed filename (/portfolio-data-${mode}.json)
-            try {
-                const legacyUrl = getCacheBustedUrl(`/portfolio-data-${PORTFOLIO_MODE}.json`);
-                if (import.meta.env.DEV) console.log(`[cmsService] Trying local fallback (suffix path): ${legacyUrl}`);
+            console.error('[cmsService] ❌ Both jsDelivr and primary Local Folder fetch failed');
+            console.error('jsDelivr error:', jsdelivrError);
+            console.error('Local folder error:', localFolderError);
 
-                const response = await fetch(legacyUrl);
-                const contentType = response.headers.get('content-type');
+            if (cachedData) return cachedData;
 
-                if (!response.ok || !contentType?.includes('application/json')) {
-                    throw new Error(`Legacy local fetch failed: ${response.status}`);
-                }
-
-                const data = await response.json();
-                return processLoadedData(data, 'Local Suffix');
-            } catch (legacyError) {
-                console.error('[cmsService] ❌ All fetch attempts failed (jsDelivr, Local Folder, Legacy Suffix)');
-                console.error('jsDelivr error:', jsdelivrError);
-                console.error('Local folder error:', localFolderError);
-                console.error('Legacy suffix error:', legacyError);
-
-                if (cachedData) return cachedData;
-
-                return {
-                    projects: [],
-                    posts: [],
-                    config: getDefaultConfig()
-                };
-            }
+            return {
+                projects: [],
+                posts: [],
+                config: getDefaultConfig()
+            };
         }
     }
 };
