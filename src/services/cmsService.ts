@@ -31,7 +31,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes client-side cache
 // detect portfolio mode from environment variable (set per Netlify site)
 const PORTFOLIO_MODE = import.meta.env.VITE_PORTFOLIO_MODE || 'directing';
 const JSDELIVR_DATA_URL = `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${PORTFOLIO_MODE}/portfolio-data.json`;
-const LOCAL_DATA_URL = `/portfolio-data.json`;
+const LOCAL_DATA_URL = `/${PORTFOLIO_MODE}/portfolio-data.json`;
 
 // Generate cache-busting URL with timestamp
 const getCacheBustedUrl = (baseUrl: string): string => {
