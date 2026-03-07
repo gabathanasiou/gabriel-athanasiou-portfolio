@@ -11,7 +11,7 @@ This project uses **Airtable** as a Headless CMS.
 1. The data is fetched via GitHub Actions (`sync-data.yml`) in the standalone **`gabriel-portfolio-data`** repository. The sync script makes a **single** batch of 5 API calls to Airtable, fetching all tables in parallel and producing JSON files for both portfolio modes (`directing` and `postproduction`).
 2. There is **no live fetching** from Airtable in the browser client. 
 3. Static files (`portfolio-data.json`, `sitemap.xml`, `robots.txt`) are generated and pushed directly to the dedicated **`data`** branch of `gabriel-portfolio-data`.
-4. The main frontend application (`gabriel-portfolio`) fetches these static data models dynamically using the **jsDelivr CDN** targeting the data branch (e.g., `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/directing/portfolio-data.json`).
+4. The main frontend application (`gabriel-portfolio`) fetches these static data models dynamically using the **jsDelivr CDN** targeting the data branch (e.g., `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/directing/portfolio-data.json`). **IMPORTANT: Agents MUST always curl the jsDelivr URL when needing to view the live JSON portfolio state, NOT local data files, to avoid inspecting stale data.**
 5. **Caching Note**: jsDelivr ignores cache-busting query strings for GitHub files. To ensure immediate updates, the `sync-data.yml` GitHub Action manually purges the jsDelivr cache for the generated JSON files after every sync.
 6. Type definitions remain in `src/types.ts` for safety (e.g., `Project`, `BlogPost`, `HomeConfig`).
 
@@ -29,6 +29,15 @@ The core sync logic lives in `gabriel-portfolio-data/scripts/lib/sync-logic.mjs`
    - Filter/transform projects (visibility, role filtering, owner credits, cross-site credits, gallery → Cloudinary URLs)
    - Filter/transform journal (only Published posts)
    - Write `{mode}/portfolio-data.json`
+
+## Advanced Field Formatting
+To provide more descriptive project content, the following fields support **bracketed labels**:
+- **Video URL** (Long Text): Supports `[Main Film] https://vimeo.com/...`. Each video will display the name in brackets as its subtitle.
+- **External Links** (Long Text): Supports `[Review] https://variety.com/...`. These will be displayed as `Review → Variety`.
+- **Credits** (Long Text): Supports both `Role: Name` and `Role by Name` (e.g., `Directed by Craig Capone`).
+
+**Separators**: These fields are parsed using a regex that splits on **commas**, **vertical pipes (|)**, and **newlines**, allowing for flexible Airtable editing.
+
 5. Separately: `generate-sitemap.mjs` and `generate-robots.mjs` read the generated JSON to produce `sitemap.xml` and `robots.txt`
 
 ## Modifying Data Models

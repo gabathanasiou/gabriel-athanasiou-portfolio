@@ -26,7 +26,7 @@ This project uses a **decoupled, headless data architecture**. The UI repository
 - **Data Repository**: [gabriel-portfolio-data](https://github.com/gabathanasiou/gabriel-portfolio-data)
 - **Source Data Schema**: See **[SCHEMA.md](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** in the data repository (`main` branch) for the complete field mapping.
 - **Sync Pipeline**: A unified sync script in the data repo fetches Airtable once and pushes generated artifacts (JSON, Sitemaps, Robots.txt) to the dedicated **`data` branch**.
-- **Consumption**: The frontend dynamically requests these files via the **jsDelivr CDN** targeting the `@data` branch version.
+- **Consumption**: The frontend dynamically requests these files via the **jsDelivr CDN** targeting the `@data` branch version. **IMPORTANT: If you need to inspect the live portfolio data JSON files, you MUST fetch them from the `data` branch (e.g., via the jsDelivr URL), NOT from the local filesystem or the `main` branch, as the data branch holds the true production artifacts.**
 
 See `_agents/skills/airtable-cms/SKILL.md` for the technical deep-dive into this flow.
 

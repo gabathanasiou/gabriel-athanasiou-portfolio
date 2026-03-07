@@ -14,19 +14,26 @@ export const VideoEmbed: React.FC<VideoEmbedProps> = ({ url, autoplay = false, m
 
   useEffect(() => {
     const resolveUrl = async () => {
-      if (!url) {
+      let finalUrl = url;
+      if (!finalUrl) {
         setIsLoading(false);
         return;
       }
 
+      // Strip potential [Label] from the URL
+      const match = finalUrl.match(/\[(.*?)\]\s*(.*)/);
+      if (match) {
+        finalUrl = match[2].trim();
+      }
+
       // Check if it's a vanity URL that needs resolution
-      const { type, id } = getVideoId(url);
+      const { type, id } = getVideoId(finalUrl);
       const isVimeoVanity = type === 'vimeo' && id && !/^\d+$/.test(id);
 
       if (isVimeoVanity) {
         // Resolve vanity URL first
         try {
-          const resolved = await resolveVideoUrl(url);
+          const resolved = await resolveVideoUrl(finalUrl);
           const embed = getEmbedUrl(resolved, autoplay, muted);
           setEmbedUrl(embed);
         } catch (error) {
@@ -35,7 +42,7 @@ export const VideoEmbed: React.FC<VideoEmbedProps> = ({ url, autoplay = false, m
         }
       } else {
         // Direct URL works
-        const embed = getEmbedUrl(url, autoplay, muted);
+        const embed = getEmbedUrl(finalUrl, autoplay, muted);
         setEmbedUrl(embed);
       }
 
@@ -57,10 +64,10 @@ export const VideoEmbed: React.FC<VideoEmbedProps> = ({ url, autoplay = false, m
 
   return (
     <div className="w-full h-full bg-black absolute inset-0">
-      <iframe 
+      <iframe
         src={embedUrl}
         className="w-full h-full absolute inset-0"
-        frameBorder="0" 
+        frameBorder="0"
         referrerPolicy="strict-origin-when-cross-origin"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
