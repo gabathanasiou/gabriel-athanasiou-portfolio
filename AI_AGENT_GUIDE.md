@@ -56,7 +56,13 @@ The project uses **Netlify** with environment variables dictating the mode.
 - **Do not hardcode Tailwind utility classes on component roots** if they represent global branding configurations. Reference `THEME.[category].[property]`.
 - **Do not duplicate global components**. When differentiating behavior between the two portfolios, write logic branching using `config.portfolioId` inside the existing shared components.
 
-## 📜 History & Changelogs
+## �️ Data Maintenance & Manual Edits
+The data pipeline is designed to be safe and predictable. 
+- **No Push-to-Sync**: Pushing to the `main` branch of the data repo does **not** trigger a sync.
+- **Manual Patches**: You can edit the production JSON files directly on the `data` branch of `gabriel-portfolio-data` to apply quick fixes without an Airtable fetch.
+- **Guide**: See `docs/MAINTENANCE.md` in the data repository for the step-by-step process.
+
+## �📜 History & Changelogs
 The verbose project history and prior massive changelogs can be found in `CHANGELOG.md` at the root. 
 - **Active Documentation**: Key guides for deployment and optimization are in `docs/`.
 - **Archived Context**: Old planning docs and implementation logs are stored in `archive_docs/`.

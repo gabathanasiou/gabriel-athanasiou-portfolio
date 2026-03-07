@@ -68,6 +68,18 @@
   color: rgba(0, 0, 0, 0.25) !important;
 }
 
+.light-theme .text-white\/30 {
+  color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.light-theme .text-white\/40 {
+  color: rgba(0, 0, 0, 0.4) !important;
+}
+
+.light-theme .text-white\/50 {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
 .light-theme .text-white\/60,
 .light-theme .text-white\/70,
 .light-theme .text-white\/80 {
@@ -76,6 +88,14 @@
 
 .light-theme .before\:text-white\/20::before {
   color: rgba(0, 0, 0, 0.25) !important;
+}
+
+.light-theme .text-gray-400 {
+  color: #888888 !important;
+}
+
+.light-theme .text-gray-500 {
+  color: #666666 !important;
 }
 
 .light-theme .opacity-60 {
@@ -111,8 +131,8 @@
   background-image: none !important;
 }
 
-.light-theme nav > div.bg-gradient-to-b {
-  background-image: linear-gradient(to bottom, rgba(255,255,255,0.9), transparent) !important;
+.light-theme nav>div.bg-gradient-to-b {
+  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), transparent) !important;
 }
 
 .light-theme nav:not(.nav-scrolled) {
@@ -313,15 +333,13 @@
 }
 
 .light-theme [style*="loadingShimmer"] {
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.01) 0%,
-    rgba(0, 0, 0, 0.03) 16.7%,
-    rgba(0, 0, 0, 0.06) 33.3%,
-    rgba(0, 0, 0, 0.08) 50%,
-    rgba(0, 0, 0, 0.06) 66.7%,
-    rgba(0, 0, 0, 0.03) 83.3%,
-    rgba(0, 0, 0, 0.01) 100%
-  ) !important;
+  background: linear-gradient(90deg,
+      rgba(0, 0, 0, 0.01) 0%,
+      rgba(0, 0, 0, 0.03) 16.7%,
+      rgba(0, 0, 0, 0.06) 33.3%,
+      rgba(0, 0, 0, 0.08) 50%,
+      rgba(0, 0, 0, 0.06) 66.7%,
+      rgba(0, 0, 0, 0.03) 83.3%,
+      rgba(0, 0, 0, 0.01) 100%) !important;
   background-size: 200% 100% !important;
 }

@@ -592,7 +592,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={() => analyticsService.trackExternalLink(link.label, link.url)}
-                                    className={`${THEME.typography.meta} text-white/50 hover:text-white transition flex items-center gap-2`}
+                                    className={`${THEME.typography.meta} text-text-muted hover:text-white transition flex items-center gap-2`}
                                 >
                                     {link.label}
                                     <svg width="10" height="10" viewBox="0 0 12 12" fill="none" className="opacity-50">
@@ -607,7 +607,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     {parsedVideos.length > 0 && parsedVideos.map((video, i) => (
                         <div key={`video-${i}`} className="w-full space-y-4">
                             {video.label && (
-                                <p className={`${THEME.typography.meta} text-white/40 mb-2`}>{video.label}</p>
+                                <p className={`${THEME.typography.meta} text-text-muted mb-2`}>{video.label}</p>
                             )}
                             <div className="w-full aspect-video bg-black shadow-lg relative">
                                 <VideoEmbed url={video.url} autoplay={false} />
