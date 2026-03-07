@@ -267,6 +267,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                 type={isNarrative ? 'video.movie' : 'video.other'}
                 project={project}
                 defaultOgImage={config.defaultOgImage}
+                config={config}
             />
 
             {/* --- THEATRE MODE OVERLAY (PORTAL) --- */}

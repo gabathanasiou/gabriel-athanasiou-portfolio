@@ -12,8 +12,8 @@ import { getOptimizedImageUrl, getSessionPreset } from '../../utils/imageOptimiz
 import { OptimizedImage } from '../common/OptimizedImage';
 import { saveScrollPosition } from '../../utils/scrollRestoration';
 
-interface BlogPostViewProps { 
-    allPosts: BlogPost[]; 
+interface BlogPostViewProps {
+    allPosts: BlogPost[];
     allProjects: Project[];
     config: HomeConfig;
 }
@@ -80,9 +80,9 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
 
     return (
         <article className={`bg-bg-main min-h-screen transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'}`}>
-            <SEO 
-                title={post.title} 
-                description={post.content.substring(0, 150)} 
+            <SEO
+                title={post.title}
+                description={post.content.substring(0, 150)}
                 image={post.imageUrl ? (() => {
                     const imageUrls = getOptimizedImageUrl(post.id, post.imageUrl, 'journal', 0, 1, getSessionPreset());
                     return imageUrls.useCloudinary ? imageUrls.cloudinaryUrl : imageUrls.fallbackUrl;
@@ -90,23 +90,24 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                 type="article"
                 post={post}
                 defaultOgImage={config.defaultOgImage}
+                config={config}
             />
-            <CloseButton 
+            <CloseButton
                 isLightTheme={config.portfolioId === 'postproduction'}
                 onClick={() => {
-                // Save current page scroll position before navigating back
-                saveScrollPosition(location.pathname);
-                
-                const state = location.state as { from?: string; page?: number; filter?: string } | undefined;
-                if (state?.from === '/journal' && state?.page && state.page > 1) {
-                    // Navigate back to the correct page in journal
-                    navigate(`/journal?page=${state.page}`);
-                } else if (state?.from) {
-                    navigate(-1);
-                } else {
-                    navigate('/journal');
-                }
-            }} />
+                    // Save current page scroll position before navigating back
+                    saveScrollPosition(location.pathname);
+
+                    const state = location.state as { from?: string; page?: number; filter?: string } | undefined;
+                    if (state?.from === '/journal' && state?.page && state.page > 1) {
+                        // Navigate back to the correct page in journal
+                        navigate(`/journal?page=${state.page}`);
+                    } else if (state?.from) {
+                        navigate(-1);
+                    } else {
+                        navigate('/journal');
+                    }
+                }} />
 
             <div className={`w-full ${THEME.blog.post.heroHeight} relative overflow-hidden`}>
                 {/* Subtle gradient - only at the very bottom for text readability */}
@@ -123,17 +124,17 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                 )}
                 <div className={`absolute inset-0 ${THEME.projectDetail.contentMaxWidth} mx-auto ${THEME.header.paddingX} flex flex-col justify-end pb-12`}>
                     <div className="z-20 max-w-3xl">
-                         <div className={`flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-white/70 mb-4`}>
-                             <span>{post.date}</span>
-                             {post.readingTime && (
+                        <div className={`flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-white/70 mb-4`}>
+                            <span>{post.date}</span>
+                            {post.readingTime && (
                                 <>
                                     <span className="text-white/40">·</span>
                                     <span>{post.readingTime}</span>
                                 </>
-                             )}
-                             {isInstagram && <span className="text-white font-bold bg-white/20 px-2 py-0.5 rounded-sm backdrop-blur-md ml-2">INSTAGRAM</span>}
-                         </div>
-                         <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif italic leading-tight text-white">{post.title}</h1>
+                            )}
+                            {isInstagram && <span className="text-white font-bold bg-white/20 px-2 py-0.5 rounded-sm backdrop-blur-md ml-2">INSTAGRAM</span>}
+                        </div>
+                        <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif italic leading-tight text-white">{post.title}</h1>
                     </div>
                 </div>
             </div>
@@ -142,48 +143,48 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                 <div className="blog-content text-sm md:text-base leading-relaxed text-gray-400 font-light space-y-5 [&>p]:mb-5 [&>h1]:text-2xl [&>h1]:font-serif [&>h1]:italic [&>h1]:mt-10 [&>h1]:mb-5 [&>h1]:text-white [&>h2]:text-xl [&>h2]:font-serif [&>h2]:italic [&>h2]:mt-8 [&>h2]:mb-4 [&>h2]:text-white [&>h3]:text-lg [&>h3]:font-medium [&>h3]:mt-6 [&>h3]:mb-3 [&>h3]:text-white [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:space-y-2 [&>blockquote]:border-l-2 [&>blockquote]:border-white/20 [&>blockquote]:pl-6 [&>blockquote]:italic [&>blockquote]:text-gray-500">
                     <div dangerouslySetInnerHTML={{ __html: parseMarkdown(post.content) }} />
                 </div>
-                
+
                 {/* External Links Section */}
                 {(post.externalUrl || (post.relatedLinks && post.relatedLinks.length > 0)) && (
                     <div className="mt-12 flex flex-col items-start gap-4">
-                        
+
                         {/* Primary Source Link (Instagram integration) */}
                         {isInstagram && post.externalUrl && (
-                             <a 
-                                href={post.externalUrl} 
-                                target="_blank" 
+                            <a
+                                href={post.externalUrl}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-3 px-8 py-3 rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition duration-300 uppercase tracking-widest text-xs font-bold"
                             >
                                 View on Instagram
                                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M1 9L9 1M9 1H3M9 1V7" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M1 9L9 1M9 1H3M9 1V7" stroke="currentColor" strokeWidth="1.5" />
                                 </svg>
                             </a>
                         )}
 
                         {/* Airtable Links */}
                         {post.relatedLinks?.map((link, i) => (
-                             <a 
+                            <a
                                 key={i}
-                                href={link} 
-                                target="_blank" 
+                                href={link}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-3 px-8 py-3 rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition duration-300 uppercase tracking-widest text-xs font-bold"
                             >
                                 {getLinkLabel(link)}
                                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M1 9L9 1M9 1H3M9 1V7" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M1 9L9 1M9 1H3M9 1V7" stroke="currentColor" strokeWidth="1.5" />
                                 </svg>
                             </a>
                         ))}
                     </div>
                 )}
-                
+
                 {relatedProject && (
                     <div className="my-16 border-t border-b border-white/10 py-8">
                         <span className={`${THEME.typography.meta} text-text-muted mb-4 block`}>Associated Project</span>
-                        <div 
+                        <div
                             onClick={() => navigate(`/work/${relatedProject.slug || relatedProject.id}`, { state: { from: location.pathname + location.search } })}
                             className="group cursor-pointer flex gap-6 items-center"
                         >
@@ -206,7 +207,7 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ allPosts, allProject
                 )}
 
                 <div className="border-t border-white/10 mt-20 pt-12 mb-12">
-                    <SocialShare 
+                    <SocialShare
                         url={typeof window !== 'undefined' ? window.location.href : ''}
                         title={post.title}
                         description={post.content.substring(0, 150)}

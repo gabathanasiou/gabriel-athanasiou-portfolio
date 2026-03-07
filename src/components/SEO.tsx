@@ -17,8 +17,8 @@ interface SEOProps {
 // Ultimate fallback image (used if Airtable Settings defaultOgImage is not configured)
 const ULTIMATE_FALLBACK_OG_IMAGE = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200";
 
-export const SEO: React.FC<SEOProps> = ({ 
-  title, 
+export const SEO: React.FC<SEOProps> = ({
+  title,
   description,
   image,
   type = 'website',
@@ -33,16 +33,32 @@ export const SEO: React.FC<SEOProps> = ({
   const defaultSeoTitle = config?.seoTitle || `${defaultSiteTitle} | Director`;
   const defaultDescription = description || config?.seoDescription || "Director based in London & Athens. Narrative, Commercial, Music Video.";
   const domain = config?.domain || '';
-  
+
   // Use provided image, or fallback to config default, or ultimate fallback
   const ogImage = image || defaultOgImage || config?.defaultOgImage || ULTIMATE_FALLBACK_OG_IMAGE;
-  
+
   const fullTitle = title ? `${title} | ${defaultSiteTitle}` : defaultSeoTitle;
   const siteUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
 
   useEffect(() => {
     // Update Title
     document.title = fullTitle;
+
+    // Update Favicon based on config
+    const faviconText = config?.portfolioId === 'postproduction' ? 'LP' : 'GA';
+
+    const iconSvg = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' font-weight='bold' fill='%23fff'>${faviconText}</text></svg>`;
+    const appleIconSvg = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%23050505' width='180' height='180'/><text x='50%' y='50%' dy='.3em' font-size='80' font-weight='bold' fill='%23fff' text-anchor='middle' dominant-baseline='middle'>${faviconText}</text></svg>`;
+
+    let iconEl = document.querySelector('link[rel="icon"]');
+    if (iconEl) {
+      iconEl.setAttribute('href', iconSvg);
+    }
+
+    let appleIconEl = document.querySelector('link[rel="apple-touch-icon"]');
+    if (appleIconEl) {
+      appleIconEl.setAttribute('href', appleIconSvg);
+    }
 
     // Helper to update meta tags
     const updateMeta = (name: string, content: string, attribute = 'name') => {
@@ -67,13 +83,13 @@ export const SEO: React.FC<SEOProps> = ({
     updateMeta('twitter:description', defaultDescription);
     updateMeta('twitter:image', ogImage);
     updateMeta('twitter:creator', '@gabrielcine');
-    
+
     // Enhanced: Add video-specific Open Graph tags if project has video
     if (project?.videoUrl) {
       updateMeta('og:video', project.videoUrl, 'property');
       updateMeta('og:video:type', 'text/html', 'property');
     }
-    
+
     // Canonical URL - use domain from config if available
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canonical) {
@@ -87,8 +103,8 @@ export const SEO: React.FC<SEOProps> = ({
     // (netlify/edge-functions/meta-rewrite.ts) for better SEO and crawler compatibility.
     // This ensures search engines see the structured data immediately without waiting for
     // client-side JavaScript execution.
-    
-  }, [fullTitle, defaultDescription, ogImage, type, siteUrl, project]);
+
+  }, [fullTitle, defaultDescription, ogImage, type, siteUrl, project, config?.portfolioId]);
 
   return null;
 };
