@@ -1,33 +1,30 @@
 ---
 name: Dual Portfolio Architecture
-description: Explaining how the single codebase supports both the Directing (directedbygabriel.com) and Post-Production (lemonpost.studio) domains.
+description: Make sure to use this skill whenever working on environment variables, routing between Directing vs Post-Production profiles, handling netlify deployment modes, or modifying global App.tsx configuration!
 ---
 
 # Dual Portfolio Architecture Skill
 
-This single codebase deploys **two separate portfolio websites** by leveraging environment variables and isolated build pipelines.
+This single codebase deploys **two separate portfolio websites** leveraging identical React components but isolated pipelines and environments. 
 
-## The Two Profiles
-1. **Directing** (`directedbygabriel.com`) 
-   - Focused strictly on Directing work.
-   - Has a Journal tab.
-   - Netlify `PORTFOLIO_MODE=directing`
-2. **Post-Production** / Lemon Post (`lemonpost.studio`) 
-   - Focused on Color, Edit, and VFX.
-   - No Journal tab but has a specialized role filter.
-   - Netlify `PORTFOLIO_MODE=postproduction`
+## The Profiles
+You must respect the specific aesthetic context based on the current mode:
 
-## How it works technically
-The single truth of data is Airtable, but during the CI/CD sync phase (`npm run sync:both`), the sync logic loops through the two different `Portfolio ID` configuration rows defined in Airtable.
-- A separate `portfolio-data-[mode].json` is generated for each.
-- The `VITE_PORTFOLIO_MODE` environment variable is captured at build time (`npm run build:directing` vs `npm run build:postprod`) to tell the React application which JSON file it should fetch and render.
+1. **Directing** (`directedbygabriel.com`)
+   - Directing portfolio work.
+   - Includes Journal routing.
+   - Uses `PORTFOLIO_MODE=directing`.
+2. **Post-Production** (`lemonpost.studio`)
+   - Edit, Color, and VFX work.
+   - Restricts Journal tab; filters strictly by role criteria.
+   - Uses `PORTFOLIO_MODE=postproduction`.
 
-## Local Development
-To run either site locally, use the specific npm scripts that inject the correct mode into Vite:
-- `npm run dev:directing`
-- `npm run dev:postprod`
+## Technical Operations
+The source of data is identical (Airtable), but the `gabriel-portfolio-data` sync phase splits out two JSON configuration files `portfolio-data-[mode].json` by pivoting the `Portfolio ID` configuration row.
+When building or deploying the main UI `gabriel-portfolio`, the React Vite process grabs the `VITE_PORTFOLIO_MODE` environment variable. The app conditionally fetches the correct config endpoint from jsDelivr, toggling all navigation links, layout logic, and filter rules seamlessly (`App.tsx`, `IndexView.tsx`).
 
-*(Be sure your local `public/` folder contains populated JSON files by running `npm run sync:both` first!)*
+Always test your component mutations natively in both environments:
+- Local Directing: `npm run dev:directing`
+- Local Lemon Post: `npm run dev:postprod`
 
-## Testing changes
-Before deploying a new feature (like a new component or routing setup), you must ensure it does not break the other portfolio. Both use the exact same React components (e.g. `App.tsx`, `IndexView.tsx`), but the properties passed to them change based on the active Config object from Airtable.
+When generating or editing components, ensure that you always verify conditional structures. Do not assume all modes have access to Journal endpoints or routing setups!

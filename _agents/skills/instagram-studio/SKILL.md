@@ -1,21 +1,21 @@
 ---
 name: Instagram Studio
-description: Instructions for managing the companion Instagram Studio app.
+description: Make sure to use this skill whenever the user asks to modify the companion Instagram Studio app, fix the scheduling grid, run the local studio server, or modify anything inside the scripts/instagram-studio directory!
 ---
 
 # Instagram Studio Skill
 
-The repository contains a separate sub-application for Instagram scheduling located in `scripts/instagram-studio/`. This is essentially an internal tool for Gabriel.
+Gabriel utilizes an internal React companion scheduling application deployed to `studio.lemonpost.studio`, located entirely within `scripts/instagram-studio/` in the main portfolio repository. 
 
-## Architecture
-- It acts as a standalone tool deployed to `studio.lemonpost.studio`.
-- Data is stored in the same Airtable base, but the Studio app organizes the content into a visual grid for social media scheduling.
-- **De-duplication**: It leverages the same data fetched during the main sync to conserve API calls, utilizing the `gabriel-portfolio-data` repository's scheduled workflows.
+## Architectural Separation
+- Do not mix portfolio Vite code `src/` with the studio companion logic! Modifications referencing Instagram features are self-contained here.
+- De-duplication: The application queries identical static jsDelivr JSON configurations built by the `gabriel-portfolio-data` sync pipeline to generate social grids, preventing repeated API queries directly from Airtable.
 
-## Local Development
-Since it's a sub-app, it has its own `package.json` logic integrated into the top-level scripts.
-- **Start the server**: `npm run instagram-studio`
-- **Install dependencies**: `npm run instagram-studio:install`
-- **Build**: `npm run instagram-studio:build`
+## Running the Application
+The studio is initialized via standard Node processes integrated at the top level:
 
-If you are asked to modify the Instagram scheduling features, you will likely be working exclusively inside the `scripts/instagram-studio/` directory. Focus on that self-contained React environment rather than the primary portfolio Vite application in `src/`.
+- `npm run instagram-studio` – Launches the standalone dev server.
+- `npm run instagram-studio:install` – Sets up the studio `package.json` logic.
+- `npm run instagram-studio:build` – Initiates the production build inside `scripts/instagram-studio/dist/`.
+
+Always assume you must navigate inside `scripts/instagram-studio/src/` to update internal grid UIs. Do not attempt to mount the studio components inside the global Directing frontend, as they are securely partitioned offline tools.
