@@ -39,11 +39,24 @@ case "$PORTFOLIO_MODE" in
 esac
 
 echo "=============================================="
-echo "🔗 Generating dynamic CDN proxy redirects..."
+echo "🤖 Downloading robots.txt and sitemap.xml..."
 echo "=============================================="
-echo "/sitemap.xml    https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${PORTFOLIO_MODE}/sitemap.xml   200" >> dist/_redirects
-echo "/robots.txt     https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${PORTFOLIO_MODE}/robots.txt    200" >> dist/_redirects
-echo "✅ Appended to dist/_redirects"
+# These must be REAL files in dist/. The SPA catch-all rewrite (/* -> /index.html)
+# serves index.html for any path without a file behind it, so /robots.txt and
+# /sitemap.xml were previously returning HTML instead of their real contents.
+node scripts/download-static-files.mjs dist
+echo "✅ Wrote robots.txt and sitemap.xml to dist/"
+echo "=============================================="
+
+# Fail the build rather than silently deploying a site with a broken sitemap.
+for required in dist/robots.txt dist/sitemap.xml; do
+  if [ ! -s "$required" ]; then
+    echo "❌ Required file missing or empty: $required"
+    exit 1
+  fi
+done
+echo "✅ Verified robots.txt and sitemap.xml exist in dist/"
+
 echo "=============================================="
 echo "✅ Build complete for: $PORTFOLIO_MODE"
 echo "=============================================="
