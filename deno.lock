@@ -20,7 +20,7 @@
         "npm:dotenv@^17.2.3",
         "npm:netlify-plugin-cache@^1.0.3",
         "npm:react-dom@^19.2.0",
-        "npm:react-router-dom@6.30.6",
+        "npm:react-router-dom@7.18.4",
         "npm:react@^19.2.0",
         "npm:sharp@^0.35.5",
         "npm:typescript@~5.8.2",
