@@ -471,7 +471,7 @@ export default async (request: Request, context: Context) => {
     <meta name="twitter:image" content="${meta.image}">${twitterHandle ? `
     <meta name="twitter:creator" content="${escapeHtml(twitterHandle)}">` : ''}
     <link rel="canonical" href="${canonicalUrl}">
-    <script type="application/ld+json">${structuredData}</script>`;
+    <script type="application/ld+json">${structuredData.replace(/</g, "\\u003c")}</script>`;
 
     // Replace existing meta section (from <title> through last twitter meta before </head>)
     // Strategy: Replace from first <title> to just before </head>, preserving other head content
