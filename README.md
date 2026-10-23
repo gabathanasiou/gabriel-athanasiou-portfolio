@@ -1,85 +1,99 @@
-# Gabriel Athanasiou Portfolio
+# Gabriel Athanasiou — Portfolio Frontend
 
-Production-ready React portfolio website with Airtable CMS, optimized images, and Google Analytics 4.
+React + Vite frontend for three properties: **directedbygabriel.com** (directing),
+**lemonpost.studio** (post-production) and **studio.lemonpost.studio** (Instagram
+Studio). Content is published as static JSON by the separate
+[`gabriel-portfolio-data`](https://github.com/gabathanasiou/gabriel-portfolio-data)
+repository and fetched at runtime from the jsDelivr CDN.
 
-## 🚀 Quick Start
+**AI agents:** read [`AGENTS.md`](./AGENTS.md) first. It is the canonical guide for
+commands, verification, architecture and security.
+
+## Quick start
 
 ```bash
-# Install dependencies
 npm install
 
-# Start development server
+# Vite only (no Netlify functions)
+npm run dev:vite
+
+# Or pick a portfolio mode
+npm run dev:directing      # directedbygabriel.com data
+npm run dev:postprod       # lemonpost.studio data
+
+# Netlify Dev (functions + edge routing); requires the Netlify CLI
 npm run dev
 ```
 
-## 🔄 Data Sync & Static Assets
+`npm run dev` calls `netlify dev`; the CLI is not a local dependency. If it is not
+installed, use `npm run dev:vite`.
 
-This project uses a **headless data architecture**. Airtable fetching, image processing to Cloudinary, and generation of static files (JSON, Sitemaps, Robots.txt) are handled by the standalone [**`gabriel-portfolio-data`**](https://github.com/gabathanasiou/gabriel-portfolio-data) repository.
+## Verify
 
-- **Data Source**: Fetched and published via the data repository.
-- **Consumption**: Content is served via the jsDelivr CDN directly into the frontend.
-- **Sync Trigger**: Handled in the data repository via GitHub Actions or Airtable Webhooks.
-
-See the [Data Repository README](https://github.com/gabathanasiou/gabriel-portfolio-data) for sync instructions.
-
-
-## 🌍 Environment Variables
-
-Create `.env.local`:
 ```bash
-VITE_AIRTABLE_TOKEN=keyXXXXXXXXXXXXXX
-VITE_AIRTABLE_BASE_ID=appXXXXXXXXXXXXXX
-VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX  # Optional: Google Analytics
-
-# Cloudinary (for image optimization and static file hosting)
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+npm run typecheck   # tsc --noEmit
+npm test            # Vitest, single run
+npm run verify      # typecheck + test
+npm run build:directing   # production build for one site
 ```
 
-## 📖 Documentation
+There is no CI yet; run `npm run verify` before calling a change done.
 
-### 📘 Master Guide
-- **[AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md)** - Complete technical documentation (START HERE)
-  - Project architecture and system design
-  - Project architecture and system design
-  - **[Airtable Schema & Mapping](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** (Stored in Data Repo `main` branch)
-  - **[Production Build Artifacts](https://github.com/gabathanasiou/gabriel-portfolio-data/tree/data)** (Stored in Data Repo `data` branch)
+## Architecture
 
-  - Troubleshooting guides
-- **[CHANGELOG.md](./CHANGELOG.md)** - Complete history of all changes
+```
+Airtable → gabriel-portfolio-data sync → data branch → jsDelivr → cmsService → React
+```
 
-### 📚 Quick Reference
-- **[DOCUMENTATION_INDEX.md](./DOCUMENTATION_INDEX.md)** - Guide to all documentation files
-- **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Netlify deployment instructions
+- The frontend never talks to Airtable and holds no provider secrets.
+- `src/services/cmsService.ts` fetches `<mode>/portfolio-data.json`, caches it for five
+  minutes, and falls back to `/<mode>/portfolio-data.json`.
+- Data contracts live in `src/types.ts`; the field mapping is documented in the data
+  repo's `docs/SCHEMA.md`.
+- Images are delivered through Cloudinary (`src/utils/imageOptimization.ts`,
+  `src/components/common/OptimizedImage.tsx`); Airtable attachment URLs expire.
+- The Instagram Studio is a separate React 18 app in `scripts/instagram-studio/` with
+  its own dependencies and Netlify config.
 
-### Core Systems
-- [docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md) - Netlify deployment instructions
-- [docs/IMAGE_OPTIMIZATION.md](./docs/IMAGE_OPTIMIZATION.md) - Cloudinary image optimization architecture
-- [docs/INSTAGRAM_QUICK_REFERENCE.md](./docs/INSTAGRAM_QUICK_REFERENCE.md) - Instagram Studio app guide
+Two styling layers: Tailwind 3.4 via the CDN script in `index.html` for local layout,
+and the `THEME` tokens in `src/theme.ts` (CSS variables applied by
+`src/components/GlobalStyles.tsx`) for shared design decisions.
 
-### Data & Schema
-- **[Airtable Schema & Mapping](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** - Field-by-field mapping in the data repo
-- **[Data Sync Workflow](https://github.com/gabathanasiou/gabriel-portfolio-data/actions)** - Triggering fresh builds from Airtable
+## Environment variables
 
-### Archived Context
-- [archive_docs/IMPLEMENTATION_LOG.md](./archive_docs/IMPLEMENTATION_LOG.md) - Historical development logs
-- [archive_docs/CODEBASE_ORGANIZATION_PLAN.md](./archive_docs/CODEBASE_ORGANIZATION_PLAN.md) - Original restructuring plan
+Create `.env.local` (never commit it):
 
-**For AI Agents:** Read [AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md) entirely before making any changes.
+```bash
+VITE_PORTFOLIO_MODE=directing        # directing | postproduction
+VITE_CLOUDINARY_CLOUD_NAME=your_cloud # optional; defaults to the production cloud
+```
 
-## 🏗️ Tech Stack
+Airtable and Cloudinary credentials belong to the data repository and Netlify, not to
+this app.
 
-- React 19.2.0 + TypeScript
-- Vite 6.2.0
-- React Router 6
-- Airtable (Headless CMS)
-- Cloudinary (Image CDN, Optimization & Static File Hosting)
-- Netlify (Hosting + Functions)
-- Sharp (Local Image Optimization)
-- Google Analytics 4
-- GitHub Actions (CI/CD & Static File Sync)
+## Documentation
 
-## 📝 License
+| Doc | What it covers |
+|---|---|
+| [`AGENTS.md`](./AGENTS.md) | canonical agent guide — start here |
+| [`AI_AGENT_GUIDE.md`](./AI_AGENT_GUIDE.md) | architecture deep dive |
+| [`docs/DEPLOYMENT_GUIDE.md`](./docs/DEPLOYMENT_GUIDE.md) | Netlify setup and domains |
+| [`docs/IMAGE_OPTIMIZATION.md`](./docs/IMAGE_OPTIMIZATION.md) | Cloudinary image pipeline |
+| [`docs/INSTAGRAM_QUICK_REFERENCE.md`](./docs/INSTAGRAM_QUICK_REFERENCE.md) | the studio sub-app |
+| [`_agents/skills/`](./_agents/skills) | task-specific skills (dual portfolio, theme, game, studio) |
+| [`_agents/workflows/`](./_agents/workflows) | component, styling and data-edit workflows |
+| [`archive_docs/`](./archive_docs) | retired plans and implementation logs — historical only |
+| [`CHANGELOG.md`](./CHANGELOG.md) | verbose project history |
 
-Private project
+## Tech stack
+
+- React 19.2 + TypeScript 5.8
+- Vite 6 + React Router 7
+- Tailwind CSS 3.4 (CDN) + `THEME` design tokens
+- Netlify hosting, functions and edge function
+- Cloudinary image delivery
+- Vitest (unit tests)
+
+## License
+
+Private project.

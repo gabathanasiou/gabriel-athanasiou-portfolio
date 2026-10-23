@@ -12,7 +12,8 @@ Do not use generic styles! Always import the global `THEME` object.
 1. **Never** hardcode primitive tailwind margin classes directly (e.g., `mb-4`, `p-6`) onto components if they map to global padding behaviors.
 2. Read the exported dictionary mapping to assign strings dynamically across elements.
 3. If structural paddings or colors are missing inside React nodes, verify standardization inside `src/theme.ts` (e.g., `THEME.filmography.paddingTop`).
-4. **No Custom CSS Modules**: Never use `styled-components` or external CSS sheets in UI templates!
+4. **No new styling system**: do not add styled-components, CSS modules, or a second
+   Tailwind config. Extend `THEME` and the existing files in `src/styles/` instead.
 
 ## Consumption Example
 

@@ -20,8 +20,13 @@ You must respect the specific aesthetic context based on the current mode:
    - Uses `PORTFOLIO_MODE=postproduction`.
 
 ## Technical Operations
-The source of data is identical (Airtable), but the `gabriel-portfolio-data` sync phase splits out two JSON configuration files `portfolio-data-[mode].json` by pivoting the `Portfolio ID` configuration row.
-When building or deploying the main UI `gabriel-portfolio`, the React Vite process grabs the `VITE_PORTFOLIO_MODE` environment variable. The app conditionally fetches the correct config endpoint from jsDelivr, toggling all navigation links, layout logic, and filter rules seamlessly (`App.tsx`, `IndexView.tsx`).
+The source of data is identical (Airtable), but the `gabriel-portfolio-data` sync phase
+splits out two JSON files, `<mode>/portfolio-data.json`, by pivoting the `Portfolio ID`
+configuration row.
+When building or deploying the main UI `gabriel-portfolio`, the React Vite process grabs
+the `VITE_PORTFOLIO_MODE` environment variable (Netlify uses `PORTFOLIO_MODE` for the
+build script). The app conditionally fetches the correct payload from jsDelivr, toggling
+all navigation links, layout logic, and filter rules seamlessly (`App.tsx`, `IndexView.tsx`).
 
 Always test your component mutations natively in both environments:
 - Local Directing: `npm run dev:directing`

@@ -1,69 +1,76 @@
-# 🤖 Gabriel Athanasiou Portfolio: Master Agent Guide
+# Architecture — Gabriel Portfolio
 
-**Purpose**: The central starting point for any AI agent interacting with this repository. 
-**Status**: Revised March 2026.
+> **Read [`AGENTS.md`](./AGENTS.md) first.** That is the canonical agent guide (commands,
+> verification, security, conventions). This file is the architecture deep dive.
+> **Status:** verified against the code on 2026-10-23.
 
-This repository powers **three distinct properties** from a single codebase and Airtable CMS:
-1. **Directing Portfolio** (`directedbygabriel.com`)
-2. **Post-Production Portfolio** (`lemonpost.studio`)
-3. **Instagram Studio App** (`studio.lemonpost.studio`)
+## Three properties, one codebase
 
-## 🧠 AI Agent Skills & Workflows
-To maintain a clean codebase, specialized logic and guides have been abstracted into `_agents/skills`. If you are tasked with any of the following, **you MUST read the corresponding skill file first**:
+1. **Directing portfolio** — `directedbygabriel.com`, `VITE_PORTFOLIO_MODE=directing`.
+2. **Post-production portfolio** — `lemonpost.studio`, `VITE_PORTFOLIO_MODE=postproduction`.
+3. **Instagram Studio** — `studio.lemonpost.studio`, a separate React 18 app in
+   `scripts/instagram-studio/` with its own dependencies and Netlify config.
 
-- **Airtable CMS**: `_agents/skills/airtable-cms/SKILL.md` (Understanding how data is fetched and built statically)
-- **Cloudinary CDN**: `_agents/skills/cloudinary-maintenance/SKILL.md` (CDN proxying, caching, static hosting)
-- **Dual Portfolio Architecture**: `_agents/skills/dual-portfolio/SKILL.md` (How one repo builds two sites)
-- **Theme Management**: `_agents/skills/theme-management/SKILL.md` (Dealing with Tailwind CSS and global styling)
-- **Instagram Studio**: `_agents/skills/instagram-studio/SKILL.md` (The dedicated guide for the Instagram application)
-- **Game Implementation**: `_agents/skills/game-implementation/SKILL.md` (Details on the interactive 'Guess the Project' game)
+The first two share every component. Differences are driven by the mode/`portfolioId`
+from the published config: navigation, filters, journal availability and role rules.
 
-## 🏗️ Core Architecture & Data Flow
+## Data flow
 
-### The Headless Data Repository
-This project uses a **decoupled, headless data architecture**. The UI repository does **not** contain the logic for fetching data from Airtable or processing media. 
+```
+Airtable  →  gabriel-portfolio-data sync  →  data branch  →  jsDelivr  →  cmsService  →  React
+```
 
-- **Data Repository**: [gabriel-portfolio-data](https://github.com/gabathanasiou/gabriel-portfolio-data)
-- **Source Data Schema**: See **[SCHEMA.md](https://github.com/gabathanasiou/gabriel-portfolio-data/blob/main/docs/SCHEMA.md)** in the data repository (`main` branch) for the complete field mapping.
-- **Sync Pipeline**: A unified sync script in the data repo fetches Airtable once and pushes generated artifacts (JSON, Sitemaps, Robots.txt) to the dedicated **`data` branch**.
-- **Consumption**: The frontend dynamically requests these files via the **jsDelivr CDN** targeting the `@data` branch version. **IMPORTANT: If you need to inspect the live portfolio data JSON files, you MUST fetch them from the `data` branch (e.g., via the jsDelivr URL), NOT from the local filesystem or the `main` branch, as the data branch holds the true production artifacts.**
+- The **data repository** (`../gabriel-portfolio-data`) owns the Airtable and Cloudinary
+  credentials, the schema mapping, the publish gate and the `data` branch. Its
+  `AGENTS.md` and `docs/SCHEMA.md` are the source of truth for content.
+- The frontend never calls Airtable. `src/services/cmsService.ts` fetches
+  `<mode>/portfolio-data.json` from jsDelivr, caches it for five minutes in memory,
+  falls back to `/<mode>/portfolio-data.json`, then to an empty state.
+- The payload is `{ projects, posts, config }`; contracts live in `src/types.ts`.
+- Images are served from Cloudinary. `src/utils/imageOptimization.ts` and
+  `src/components/common/OptimizedImage.tsx` build delivery URLs (`q_auto,f_auto`);
+  raw Airtable attachment URLs expire and must never reach the UI.
 
-See `_agents/skills/airtable-cms/SKILL.md` for the technical deep-dive into this flow.
+## Rendering
 
-### Media Delivery
-The application never loads raw Airtable image URLs (they expire). Everything is synchronized to Cloudinary during the data sync process. The application utilizes `src/components/common/OptimizedImage.tsx` which constructs authorized the Cloudinary delivery URLs (`q_auto,f_auto`).
+- `src/App.tsx` owns the routes: `/`, `/work`, `/work/:slug`, `/journal`,
+  `/journal/:slug`, `/about`, `/game`, and the 404 fallback.
+- Page views in `src/components/views/` are lazy-loaded with `React.lazy`; shared
+  components live in `src/components/`.
+- Two layers of styling:
+  - **Tailwind 3.4** via the CDN script in `index.html` (with an inline config that
+    maps CSS variables), used for local layout.
+  - **`THEME`** in `src/theme.ts` — shared typography, spacing, colour and animation
+    class strings — with CSS variables injected by `src/components/GlobalStyles.tsx`.
+- `src/utils/markdown.ts` renders journal content and escapes/sanitises it before HTML
+  insertion. Do not bypass it, and do not add a second Markdown renderer.
 
-### The Technology Stack
-- **Frontend**: React 19.2 + Vite + React Router 6. Everything uses TypeScript (`src/types.ts`).
-- **Styling**: Vanilla CSS with custom design tokens in `src/theme.ts`. (Tailwind CSS has been removed/phased out in favor of the custom theme system).
-- **Backend/CI**: Handled exclusively in the data repository.
+## Backend surface
 
-## 🚀 Deployment & CI/CD
-The project uses **Netlify** with environment variables dictating the mode. 
-- **Directing Env**: `PORTFOLIO_MODE=directing` mapped to directedbygabriel.com
-- **Post Prod Env**: `PORTFOLIO_MODE=postproduction` mapped to lemonpost.studio
-- **Static Artifacts**: Generated data payloads like `sitemap.xml` and `portfolio-data.json` are uploaded straight to Cloudinary, bypassing Netlify CDN completely to ensure instantaneous cache propagation globally.
+- `netlify/functions/sitemap.js` serves the already-generated sitemap from jsDelivr.
+- `netlify/edge-functions/meta-rewrite.ts` is a **Deno** edge function for share/meta
+  tags. It is excluded from the root `tsconfig.json`; do not import it from `src/`.
+- `scripts/netlify-build.sh` is the production build entry point. It installs, builds
+  the selected mode, writes `robots.txt`/`sitemap.xml` into `dist/`, and fails the
+  build if either is missing.
 
-## 🗂️ Project Layout
-- `src/theme.ts`: Global application configuration.
-- `src/types.ts`: TypeScript contracts for the `Config`, `Project`, and `Post` entities.
-- `src/components/views/*`: Complete page-level components conditionally loaded in `App.tsx`.
-- `src/components/common/OptimizedImage.tsx`: The core wrapper component for rendering images appropriately processed through Cloudinary.
-- `scripts/*`: A huge array of backend utilities supporting data syncing, test diagnostic environments, and the Instagram Studio app source code. 
+## Deployment
 
-## 🚫 Critical Anti-Patterns (DO NOT DO)
-- **Do not fetch directly from Airtable from React code.**
-- **Do not hardcode Tailwind utility classes on component roots** if they represent global branding configurations. Reference `THEME.[category].[property]`.
-- **Do not duplicate global components**. When differentiating behavior between the two portfolios, write logic branching using `config.portfolioId` inside the existing shared components.
+- Netlify builds one site per mode. `scripts/ignore-netlify-build.sh` skips builds on
+  `main` unless the commit message contains `[deploy]`/`[force-deploy]` (or a scheduled
+  sync). Never add those markers unless the user explicitly asks for a deployment.
+- The Instagram Studio has its own `netlify.toml`, functions and deploy; keep its code
+  and build inside `scripts/instagram-studio/`.
 
-## �️ Data Maintenance & Manual Edits
-The data pipeline is designed to be safe and predictable. 
-- **No Push-to-Sync**: Pushing to the `main` branch of the data repo does **not** trigger a sync.
-- **Manual Patches**: You can edit the production JSON files directly on the `data` branch of `gabriel-portfolio-data` to apply quick fixes without an Airtable fetch.
-- **Guide**: See `docs/MAINTENANCE.md` in the data repository for the step-by-step process.
+## Anti-patterns
 
-## �📜 History & Changelogs
-The verbose project history and prior massive changelogs can be found in `CHANGELOG.md` at the root. 
-- **Active Documentation**: Key guides for deployment and optimization are in `docs/`.
-- **Archived Context**: Old planning docs and implementation logs are stored in `archive_docs/`.
-- **Specialized Knowledge**: Deep dives into specific features are in `_agents/skills/`.
+- Fetching Airtable or holding provider secrets in React code.
+- Hand-editing the `data` branch (the data repo has a guarded procedure).
+- Duplicating shared components per portfolio instead of branching on mode.
+- Adding a new styling system, component library or state manager without asking.
+- Adding `[deploy]` to a commit because the change "seems ready".
+
+## Historical context
+
+`CHANGELOG.md` keeps the verbose history; `archive_docs/` holds retired planning docs.
+Neither is a live guide — prefer `AGENTS.md`, `docs/` and the data repo's docs.

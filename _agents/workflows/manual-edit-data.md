@@ -1,28 +1,20 @@
 ---
-description: How to make a manual edit to a static JSON file without triggering a full sync
+description: How to change production portfolio data safely
 ---
 
-# Manual Data Edit Workflow
+# Data Edit Workflow
 
-Follow these steps to update production portfolio data without triggering an Airtable sync.
+Do **not** edit the published `data` branch directly and never run `git add .` there.
+The data repository owns the guarded procedure.
 
-1. **Switch to the data branch** in the data repository:
-   ```bash
-   git checkout data
-   ```
+1. **Normal content change:** edit the record in Airtable, then run the
+   **"Sync Data & Static Files"** workflow in `gabriel-portfolio-data` (or dispatch
+   `repository_dispatch: airtable-webhook-sync`).
+2. **Emergency hotfix:** follow `../gabriel-portfolio-data/docs/MAINTENANCE.md` — a
+   throwaway worktree, explicit artifact paths, and the `guard:data` check.
+3. **Verify:** fetch `<mode>/portfolio-data.json` from the jsDelivr `@data` URL for both
+   modes; purge the CDN only if a cache is stale.
+4. **Never** commit secrets, `.env*`, `cloudinary-mapping.json` or non-artifact files to
+   `data`.
 
-2. **Edit the target file**:
-   - `directing/portfolio-data.json`
-   - `postproduction/portfolio-data.json`
-
-3. **Commit with skip ci**:
-   // turbo
-   ```bash
-   git add .
-   git commit -m "chore: manual data patch [ci skip]"
-   git push origin data
-   ```
-
-4. **Purge Cache** (Optional but recommended):
-   Open in browser:
-   `https://purge.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/directing/portfolio-data.json`
+See `../gabriel-portfolio-data/AGENTS.md` for the full publish and rollback contract.

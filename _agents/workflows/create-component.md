@@ -2,13 +2,18 @@
 description: Create a new React Component following project standards
 ---
 
-1. Create a new `.tsx` file inside `src/components/` (or `src/components/views/` if it's a new page route).
-2. Create a functional React component.
-3. Import the `THEME` object from `theme.ts` if styling is required.
-4. If the component interacts with logic, delegate state management or data fetching upstream or to custom hooks, keeping the component mostly presentational.
-5. Export the component for use.
+1. Create a new `.tsx` file inside `src/components/` (or `src/components/views/` if it is a new page route).
+2. Create a functional React component and export it by name.
+3. Import `THEME` from `theme.ts` for shared styling. `THEME.colors.*` are CSS colour
+   values, not class names — use `THEME` class tokens for typography/spacing and inline
+   styles only for raw values.
+4. Keep components mostly presentational; put data fetching in `src/services/` and state
+   in a hook or the parent view.
+5. Add the component to `App.tsx` (route) or its parent layout, then run
+   `npm run typecheck` and `npm test`.
 
 Example:
+
 ```tsx
 import React from 'react';
 import { THEME } from '../theme';
@@ -19,10 +24,12 @@ interface MyNewComponentProps {
 
 export const MyNewComponent: React.FC<MyNewComponentProps> = ({ title }) => {
   return (
-    <div className={`${THEME.colors.background} ${THEME.typography.body}`}>
+    <div
+      className={THEME.typography.body}
+      style={{ backgroundColor: THEME.colors.background }}
+    >
       {title}
     </div>
   );
-}
+};
 ```
-6. Add the component to the main `App.tsx` or its parent layout.
