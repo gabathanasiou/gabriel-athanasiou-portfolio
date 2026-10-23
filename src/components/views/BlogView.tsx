@@ -5,7 +5,7 @@ import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { BlogPost } from '../../types';
 import { THEME } from '../../theme';
 import { OptimizedImage } from '../common/OptimizedImage';
-import { parseMarkdown } from '../../utils/markdown';
+import { parseMarkdown, htmlToText } from '../../utils/markdown';
 
 export const POSTS_PER_PAGE = 10;
 
@@ -151,7 +151,7 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
                                      </div>
                                      <h2 className={`${THEME.typography.h2} mb-6 group-hover:text-white/80 transition mix-blend-difference text-white`}>{post.title}</h2>
                                      <p className="text-gray-400 font-light leading-relaxed text-sm line-clamp-2 mb-8">
-                                        {parseMarkdown(post.content).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()}
+                                        {htmlToText(parseMarkdown(post.content)).replace(/\s+/g, ' ').trim()}
                                      </p>
                                      <span className={`${THEME.typography.meta} underline underline-offset-4 decoration-white/30 group-hover:decoration-white transition`}>Read Article</span>
                                  </div>
