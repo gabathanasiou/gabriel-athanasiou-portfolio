@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getVideoId, getEmbedUrl } from '../videoHelpers.mjs';
+import { getVideoId, getEmbedUrl } from '../videoHelpers';
 
 describe('videoHelpers', () => {
   describe('getVideoId', () => {

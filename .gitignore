@@ -31,9 +31,15 @@ public/images/portfolio/
 
 # Test temporary files
 __test_temp__/
+coverage/
 
 # Keep cloudinary-mapping.json in git for persistence across deployments
 # This enables incremental syncs (only upload changed images)
+
+# Env files (examples stay tracked)
+.env
+.env.*
+!.env.example
 
 # Netlify env files with secrets
 .env.netlify-*

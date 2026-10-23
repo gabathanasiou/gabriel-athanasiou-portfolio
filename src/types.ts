@@ -36,6 +36,8 @@ export interface Project {
   type: ProjectType | string;
   kinds?: string[]; // Raw project kinds from Airtable (e.g. ["Commercial", "TVC"])
   genre?: string[]; // e.g. ["Sci-Fi", "Drama"]
+  keywords?: string[]; // Optional search keywords (not currently emitted by the pipeline)
+  director?: string; // Optional search field (not currently emitted by the pipeline)
   productionCompany: string; // Production company that produced the work
   client?: string; // Optional client/brand field
   year: string;
@@ -65,13 +67,13 @@ export interface BlogPost {
   title: string;
   slug?: string;
   date: string;
-  status?: 'Public' | 'Scheduled' | 'Draft'; // Publication status from Airtable
+  status?: 'Published' | 'Public' | 'Scheduled' | 'Draft'; // Publication status from Airtable
   readingTime?: string; // e.g. "4 min read"
   content: string; // HTML or Markdown string
   imageUrl?: string;
   tags: string[];
   relatedProjectId?: string; // If this post is about a specific film
-  
+
   // New fields for Instagram integration
   source?: 'local' | 'instagram';
   externalUrl?: string; // The main source link (e.g. Instagram permalink)
