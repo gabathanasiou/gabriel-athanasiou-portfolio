@@ -50,6 +50,7 @@ docs/                     deployment, image optimisation, studio quick reference
 | `npm run dev` | Netlify Dev, functions + Vite. Requires the Netlify CLI (not a dependency) |
 | `npm run dev:vite` | Vite only, no functions |
 | `npm run dev:directing` / `dev:postprod` | mode-specific Vite dev server |
+| `npm run wall-editor` | local-only brand wall visual editor (`/wall-editor.html`) |
 | `npm run build` | plain Vite production build |
 | `npm run build:directing` / `build:postprod` | mode-specific production build |
 | `npm run preview` | serve the built `dist/` |
@@ -144,6 +145,7 @@ there is no browser test layer.
 | `AI_AGENT_GUIDE.md` | architecture deep dive, data flow, anti-patterns |
 | `docs/DEPLOYMENT_GUIDE.md` | Netlify setup and domains |
 | `docs/IMAGE_OPTIMIZATION.md` | Cloudinary URL building and image pipeline |
+| `docs/BRAND_WALL_EDITOR.md` | local wall editor, export plan and apply flow |
 | `docs/INSTAGRAM_QUICK_REFERENCE.md` | the studio sub-app |
 | `_agents/skills/dual-portfolio/` | mode-specific routing and filtering |
 | `_agents/skills/theme-management/` | THEME usage |

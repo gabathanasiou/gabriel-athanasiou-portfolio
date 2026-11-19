@@ -206,12 +206,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, brands, con
                     label={brandWallLabel}
                     layout={brandWallLayout}
                     colourOnHover={config.brandWall?.colourOnHover ?? false}
+                    logoHeight={config.brandWall?.logoHeight}
+                    spacing={config.brandWall?.spacing}
                     className="pb-0 md:pb-0"
                 />
             )}
 
             {/* FILMSTRIP SECTION */}
-            <div className={`${showBrandWall ? 'pt-16 md:pt-24' : THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} bg-bg-main relative z-10`}>
+            <div className={`${showBrandWall ? 'pt-12 md:pt-16' : THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} bg-bg-main relative z-10`}>
                 <div className="max-w-7xl mx-auto">
                     <div className="flex justify-between items-end mb-16 border-b border-white/10 pb-4">
                         <span className={`${THEME.typography.meta} text-text-muted`}>Featured Work</span>

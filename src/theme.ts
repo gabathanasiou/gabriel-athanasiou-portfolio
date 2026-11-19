@@ -141,14 +141,14 @@ export const THEME = {
     wordmarkSize: 24,
 
     // Section rhythm, matching the filmstrip container.
-    sectionPadding: "py-16 md:py-24",
+    sectionPadding: "py-12 md:py-16",
     container: "mx-auto w-full max-w-7xl px-6 md:px-12",
 
     // Grid variant
     gridCell: "flex min-h-[104px] items-center justify-center border-r border-b p-6 md:min-h-[132px] md:p-8",
 
     // Inline (default) and marquee spacing
-    inlineGap: "gap-x-10 gap-y-8 md:gap-x-16 md:gap-y-10",
+    inlineGap: "gap-x-8 gap-y-6 md:gap-x-12 md:gap-y-8",
     marqueeGap: "gap-x-14 md:gap-x-20",
 
     // Defaults when the Settings row is missing a value.

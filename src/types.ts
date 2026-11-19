@@ -158,6 +158,8 @@ export interface HomeConfig {
     label?: string;
     layout?: 'inline' | 'grid' | 'marquee';
     colourOnHover?: boolean;
+    logoHeight?: number;
+    spacing?: number;
     brandIds?: string[]; // Record IDs, in display order
   };
   

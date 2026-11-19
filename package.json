@@ -8,6 +8,7 @@
     "dev:vite": "vite",
     "dev:directing": "VITE_PORTFOLIO_MODE=directing vite",
     "dev:postprod": "VITE_PORTFOLIO_MODE=postproduction vite",
+    "wall-editor": "vite --open /wall-editor.html",
     "build": "vite build",
     "build:directing": "VITE_PORTFOLIO_MODE=directing vite build",
     "build:postprod": "VITE_PORTFOLIO_MODE=postproduction vite build",

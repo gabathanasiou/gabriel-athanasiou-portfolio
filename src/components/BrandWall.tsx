@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Brand } from '../types';
 import { THEME } from '../theme';
 import { BrandMark } from './brand/BrandMark';
@@ -10,17 +10,37 @@ interface BrandWallProps {
   label?: string;
   layout?: BrandWallLayout;
   colourOnHover?: boolean;
+  /** Base logo height in px; individual brands still apply their Scale. */
+  logoHeight?: number;
+  /** Multiplier for section padding and row/column gaps. */
+  spacing?: number;
   className?: string;
 }
 
 interface BrandItemProps {
   brand: Brand;
   colourOnHover: boolean;
+  logoHeight: number;
 }
 
 const lineStyle = { borderColor: 'var(--color-line)' };
 
-const BrandItem: React.FC<BrandItemProps> = ({ brand, colourOnHover }) => {
+function useIsDesktop(): boolean {
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window === 'undefined' || window.matchMedia('(min-width: 768px)').matches
+  );
+
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 768px)');
+    const onChange = () => setIsDesktop(query.matches);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, []);
+
+  return isDesktop;
+}
+
+const BrandItem: React.FC<BrandItemProps> = ({ brand, colourOnHover, logoHeight }) => {
   const className = [
     'group inline-flex min-w-0 max-w-full items-center justify-center',
     'opacity-60 transition-opacity duration-500 hover:opacity-100 focus-visible:opacity-100',
@@ -32,7 +52,7 @@ const BrandItem: React.FC<BrandItemProps> = ({ brand, colourOnHover }) => {
     <BrandMark
       brand={brand}
       colourOnHover={colourOnHover}
-      height={THEME.brandWall.logoHeight}
+      height={logoHeight}
     />
   );
 
@@ -80,19 +100,27 @@ const SectionLabel: React.FC<{ children: React.ReactNode; count?: number }> = ({
 const MarqueeGroup: React.FC<{
   brands: Brand[];
   colourOnHover: boolean;
+  logoHeight: number;
+  gap: number;
   hidden?: boolean;
-}> = ({ brands, colourOnHover, hidden = false }) => (
+}> = ({ brands, colourOnHover, logoHeight, gap, hidden = false }) => (
   <div
     className={[
-      'flex items-center gap-x-14 pr-14 md:gap-x-20 md:pr-20',
+      'flex items-center',
       'motion-reduce:flex-wrap motion-reduce:justify-center motion-reduce:gap-y-8 motion-reduce:pr-0',
       hidden ? 'motion-reduce:hidden' : ''
     ].join(' ')}
+    style={{ columnGap: gap, paddingRight: gap }}
     aria-hidden={hidden || undefined}
     inert={hidden || undefined}
   >
     {brands.map((brand) => (
-      <BrandItem key={`${hidden ? 'dup-' : ''}${brand.id}`} brand={brand} colourOnHover={colourOnHover} />
+      <BrandItem
+        key={`${hidden ? 'dup-' : ''}${brand.id}`}
+        brand={brand}
+        colourOnHover={colourOnHover}
+        logoHeight={logoHeight}
+      />
     ))}
   </div>
 );
@@ -107,16 +135,28 @@ export const BrandWall: React.FC<BrandWallProps> = ({
   label = THEME.brandWall.defaultLabel,
   layout = THEME.brandWall.defaultLayout,
   colourOnHover = THEME.brandWall.defaultColourOnHover,
+  logoHeight,
+  spacing = 1,
   className = ''
 }) => {
+  const isDesktop = useIsDesktop();
+
   if (brands.length === 0) return null;
 
+  const baseLogoHeight = logoHeight ?? THEME.brandWall.logoHeight;
+  const spacingValue = Math.min(2, Math.max(0.5, spacing));
+  const sectionPaddingTop = (isDesktop ? 64 : 48) * spacingValue;
+  const rowGap = (isDesktop ? 32 : 24) * spacingValue;
+  const columnGap = (isDesktop ? 48 : 32) * spacingValue;
+  const labelGap = (isDesktop ? 32 : 28) * spacingValue;
+  const gridPadding = (isDesktop ? 32 : 24) * spacingValue;
+  const sectionStyle = { paddingTop: `${sectionPaddingTop}px` };
   const container = THEME.brandWall.container;
   const section = `${THEME.brandWall.sectionPadding} ${className}`.trim();
 
   if (layout === 'grid') {
     return (
-      <section className={section} aria-label={label}>
+      <section className={section} style={sectionStyle} aria-label={label}>
         <div className={container}>
           <SectionLabel count={brands.length}>{label}</SectionLabel>
           <div
@@ -124,8 +164,16 @@ export const BrandWall: React.FC<BrandWallProps> = ({
             style={lineStyle}
           >
             {brands.map((brand) => (
-              <div key={brand.id} className={THEME.brandWall.gridCell} style={lineStyle}>
-                <BrandItem brand={brand} colourOnHover={colourOnHover} />
+              <div
+                key={brand.id}
+                className={THEME.brandWall.gridCell}
+                style={{ ...lineStyle, padding: `${gridPadding}px` }}
+              >
+                <BrandItem
+                  brand={brand}
+                  colourOnHover={colourOnHover}
+                  logoHeight={baseLogoHeight}
+                />
               </div>
             ))}
           </div>
@@ -136,7 +184,7 @@ export const BrandWall: React.FC<BrandWallProps> = ({
 
   if (layout === 'marquee') {
     return (
-      <section className={section} aria-label={label}>
+      <section className={section} style={sectionStyle} aria-label={label}>
         <div className={container}>
           <SectionLabel count={brands.length}>{label}</SectionLabel>
         </div>
@@ -146,8 +194,19 @@ export const BrandWall: React.FC<BrandWallProps> = ({
           style={lineStyle}
         >
           <div className="brand-marquee-track flex w-max items-center motion-reduce:w-full motion-reduce:flex-wrap motion-reduce:justify-center">
-            <MarqueeGroup brands={brands} colourOnHover={colourOnHover} />
-            <MarqueeGroup brands={brands} colourOnHover={colourOnHover} hidden />
+            <MarqueeGroup
+              brands={brands}
+              colourOnHover={colourOnHover}
+              logoHeight={baseLogoHeight}
+              gap={columnGap}
+            />
+            <MarqueeGroup
+              brands={brands}
+              colourOnHover={colourOnHover}
+              logoHeight={baseLogoHeight}
+              gap={columnGap}
+              hidden
+            />
           </div>
         </div>
       </section>
@@ -155,16 +214,24 @@ export const BrandWall: React.FC<BrandWallProps> = ({
   }
 
   return (
-    <section className={section} aria-label={label}>
+    <section className={section} style={sectionStyle} aria-label={label}>
       <div className={container}>
-        <div className="mb-9 text-center md:mb-10">
+        <div className="text-center" style={{ marginBottom: `${labelGap}px` }}>
           <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-text-muted">
             {label}
           </span>
         </div>
-        <div className={`flex flex-wrap items-center justify-center ${THEME.brandWall.inlineGap}`}>
+        <div
+          className={`flex flex-wrap items-center justify-center ${THEME.brandWall.inlineGap}`}
+          style={{ rowGap: `${rowGap}px`, columnGap: `${columnGap}px` }}
+        >
           {brands.map((brand) => (
-            <BrandItem key={brand.id} brand={brand} colourOnHover={colourOnHover} />
+            <BrandItem
+              key={brand.id}
+              brand={brand}
+              colourOnHover={colourOnHover}
+              logoHeight={baseLogoHeight}
+            />
           ))}
         </div>
       </div>
