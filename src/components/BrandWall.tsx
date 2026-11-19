@@ -314,6 +314,7 @@ export const BrandWall: React.FC<BrandWallProps> = ({
   const container = THEME.brandWall.container;
   const section = `${THEME.brandWall.sectionPadding} ${className}`.trim();
   const indexById = new Map(brands.map((brand, index) => [brand.id, index]));
+  const brandById = new Map(brands.map((brand) => [brand.id, brand]));
   const brandSetSignature = [...new Set(brands.map((brand) => brand.id))].sort().join('|');
   const previousBrandIdsRef = React.useRef<Set<string>>(new Set());
 
@@ -575,7 +576,8 @@ export const BrandWall: React.FC<BrandWallProps> = ({
                   className="flex items-center justify-center"
                   style={{ columnGap: `${columnGap}px` }}
                 >
-                  {row.map((brand) => {
+                  {row.map((rowBrand) => {
+                    const brand = brandById.get(rowBrand.id) ?? rowBrand;
                     const index = indexById.get(brand.id) ?? 0;
                     return (
                       <BrandItem
