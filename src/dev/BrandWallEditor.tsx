@@ -112,6 +112,7 @@ export const BrandWallEditor: React.FC = () => {
   const [loading, setLoading] = useState<Mode | null>(null);
   const [error, setError] = useState('');
   const [previewDark, setPreviewDark] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
   const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
   const [addId, setAddId] = useState('');
   const [notice, setNotice] = useState('');
@@ -321,6 +322,17 @@ export const BrandWallEditor: React.FC = () => {
           <button type="button" className={buttonClass} onClick={() => setPreviewDark((value) => !value)}>
             Preview: {previewDark ? 'Dark' : 'Light'}
           </button>
+          <button
+            type="button"
+            onClick={() => setPreviewMode((value) => !value)}
+            className={`rounded-md px-3 py-2 text-xs font-semibold transition-colors ${
+              previewMode
+                ? 'bg-lime-300 text-zinc-950'
+                : 'border border-zinc-700 text-zinc-300 hover:border-lime-400'
+            }`}
+          >
+            {previewMode ? 'Edit' : 'Full preview'}
+          </button>
           <button type="button" className={buttonClass} onClick={() => void load(mode)} disabled={loading !== null}>
             {loading === mode ? 'Loading…' : 'Reload live'}
           </button>
@@ -328,7 +340,7 @@ export const BrandWallEditor: React.FC = () => {
       </header>
 
       <main className="flex flex-col lg:flex-row">
-        <section className="min-w-0 flex-1 p-4 lg:p-6">
+        <section className={`min-w-0 flex-1 ${previewMode ? '' : 'p-4 lg:p-6'}`}>
           {error && (
             <div className="mb-4 rounded-md border border-red-800 bg-red-950/60 px-3 py-2 text-sm text-red-200">
               {error}
@@ -336,7 +348,9 @@ export const BrandWallEditor: React.FC = () => {
           )}
 
           <div
-            className="mx-auto w-full max-w-[1280px] overflow-hidden rounded-lg border border-zinc-800 shadow-2xl"
+            className={previewMode
+              ? 'w-full'
+              : 'mx-auto w-full max-w-[1280px] overflow-hidden rounded-lg border border-zinc-800 shadow-2xl'}
             style={{
               ...previewVars(previewDark),
               backgroundColor: 'var(--color-bg-main)',
@@ -356,7 +370,7 @@ export const BrandWallEditor: React.FC = () => {
                 colourOnHover={wall.colourOnHover}
                 logoHeight={wall.logoHeight}
                 spacing={wall.spacing}
-                edit={wall.layout === 'marquee' ? undefined : {
+                edit={previewMode || wall.layout === 'marquee' ? undefined : {
                   selectedBrandId,
                   onSelect: setSelectedBrandId,
                   onReorder: reorderBrand
@@ -366,19 +380,22 @@ export const BrandWallEditor: React.FC = () => {
             )}
           </div>
 
-          <div className="mx-auto mt-3 flex max-w-[1280px] flex-wrap items-center justify-between gap-2 text-xs text-zinc-500">
-            <span>
-              {payload ? `${brands.length} brands loaded · ${wallBrands.length} on the wall` : 'Fetching live data…'}
-            </span>
-            <span>
-              {wall?.layout === 'marquee'
-                ? 'Marquee preview · switch to Inline or Grid to drag'
-                : 'Click a logo to select · drag to reorder'}
-            </span>
-          </div>
+          {!previewMode && (
+            <div className="mx-auto mt-3 flex max-w-[1280px] flex-wrap items-center justify-between gap-2 text-xs text-zinc-500">
+              <span>
+                {payload ? `${brands.length} brands loaded · ${wallBrands.length} on the wall` : 'Fetching live data…'}
+              </span>
+              <span>
+                {wall?.layout === 'marquee'
+                  ? 'Marquee preview · switch to Inline or Grid to drag'
+                  : 'Click a logo to select · drag to reorder'}
+              </span>
+            </div>
+          )}
         </section>
 
-        <aside className="we-scroll w-full space-y-6 border-t border-zinc-800 bg-zinc-900/60 p-5 lg:h-[calc(100vh-73px)] lg:w-[370px] lg:overflow-y-auto lg:border-l lg:border-t-0">
+        {!previewMode && (
+          <aside className="we-scroll w-full space-y-6 border-t border-zinc-800 bg-zinc-900/60 p-5 lg:h-[calc(100vh-73px)] lg:w-[370px] lg:overflow-y-auto lg:border-l lg:border-t-0">
           {wall && payload ? (
             <>
               <Section title="Wall">
@@ -534,6 +551,7 @@ export const BrandWallEditor: React.FC = () => {
             <p className="text-sm text-zinc-500">Loading editor…</p>
           )}
         </aside>
+        )}
       </main>
     </div>
   );

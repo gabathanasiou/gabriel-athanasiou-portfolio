@@ -153,14 +153,14 @@ const BrandItem: React.FC<BrandItemProps> = ({
   const className = [
     'group inline-flex flex-none min-w-0 max-w-full items-center justify-center',
     edit
-      ? 'relative cursor-grab rounded-md px-2 py-1 opacity-100 outline-offset-4 transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-lime-400 active:cursor-grabbing'
+      ? 'relative cursor-grab rounded-md outline-offset-4 transition-opacity duration-500 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-lime-400 active:cursor-grabbing'
       : 'opacity-60 transition-opacity duration-500 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-8',
     edit && dropTarget
-      ? 'outline outline-2 outline-dashed outline-lime-400 bg-lime-400/10'
+      ? 'opacity-100 outline outline-2 outline-dashed outline-lime-400 bg-lime-400/10'
       : edit && selected
-        ? 'outline outline-2 outline-lime-400'
+        ? 'opacity-100 outline outline-2 outline-lime-400'
         : edit
-          ? 'outline outline-1 outline-transparent'
+          ? 'opacity-60 outline outline-1 outline-transparent hover:opacity-100'
           : ''
   ].join(' ');
   const style = edit ? undefined : { outlineColor: 'var(--color-text-main)' };
