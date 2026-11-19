@@ -26,8 +26,10 @@ const MODES: Array<{ id: Mode; label: string }> = [
   { id: 'postproduction', label: 'Lemon Post' }
 ];
 
-const LIVE_URL = (mode: Mode) =>
-  `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${mode}/portfolio-data.json`;
+const LIVE_URL = (mode: Mode) => {
+  const ref = mode === 'postproduction' ? 'data-live' : 'data';
+  return `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@${ref}/${mode}/portfolio-data.json`;
+};
 
 const LAYOUT_LABEL: Record<BrandWallLayout, string> = {
   inline: 'Inline',

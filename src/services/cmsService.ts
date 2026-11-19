@@ -31,7 +31,8 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes client-side cache
 // jsDelivr CDN URL for static portfolio data (primary source)
 // detect portfolio mode from environment variable (set per Netlify site)
 const PORTFOLIO_MODE = import.meta.env.VITE_PORTFOLIO_MODE || 'directing';
-const JSDELIVR_DATA_URL = `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${PORTFOLIO_MODE}/portfolio-data.json`;
+const DATA_REF = PORTFOLIO_MODE === 'postproduction' ? 'data-live' : 'data';
+const JSDELIVR_DATA_URL = `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@${DATA_REF}/${PORTFOLIO_MODE}/portfolio-data.json`;
 const PREVIEW_DATA_DIR = String(import.meta.env.VITE_PREVIEW_DATA_DIR || '').replace(/\/+$/, '');
 const PRIMARY_DATA_URL = PREVIEW_DATA_DIR
     ? `${PREVIEW_DATA_DIR}/${PORTFOLIO_MODE}/portfolio-data.json`
