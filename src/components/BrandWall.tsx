@@ -314,6 +314,8 @@ export const BrandWall: React.FC<BrandWallProps> = ({
   const container = THEME.brandWall.container;
   const section = `${THEME.brandWall.sectionPadding} ${className}`.trim();
   const indexById = new Map(brands.map((brand, index) => [brand.id, index]));
+  const brandSetSignature = [...new Set(brands.map((brand) => brand.id))].sort().join('|');
+  const previousBrandIdsRef = React.useRef<Set<string>>(new Set());
 
   const measureRows = useCallback(() => {
     if (layout !== 'inline') {
@@ -330,12 +332,11 @@ export const BrandWall: React.FC<BrandWallProps> = ({
     const elements = Array.from(
       wrapper.querySelectorAll<HTMLElement>('[data-brand-id]')
     );
-    if (elements.length !== brands.length) return;
-
+    const currentIds = new Set(brands.map((brand) => brand.id));
     const widths = new Map<string, number>();
     for (const element of elements) {
       const id = element.dataset.brandId;
-      if (!id) continue;
+      if (!id || !currentIds.has(id)) continue;
       const width = element.getBoundingClientRect().width;
       if (width <= 0) return;
       widths.set(id, width);
@@ -350,6 +351,17 @@ export const BrandWall: React.FC<BrandWallProps> = ({
     rowsSignatureRef.current = signature;
     setRows(packed);
   }, [brands, layout, columnGap, effectiveLogoHeight]);
+
+  useLayoutEffect(() => {
+    const current = new Set(brands.map((brand) => brand.id));
+    const previous = previousBrandIdsRef.current;
+    const hasAdded = [...current].some((id) => !previous.has(id));
+    if (hasAdded) {
+      rowsSignatureRef.current = '';
+      setRows(null);
+    }
+    previousBrandIdsRef.current = current;
+  }, [brandSetSignature]);
 
   useLayoutEffect(() => {
     const wrapper = measureRef.current;
