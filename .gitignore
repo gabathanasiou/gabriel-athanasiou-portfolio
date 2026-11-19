@@ -43,3 +43,6 @@ coverage/
 
 # Netlify env files with secrets
 .env.netlify-*
+
+# Local preview data snapshots (wall editor previews)
+public/preview-data/
