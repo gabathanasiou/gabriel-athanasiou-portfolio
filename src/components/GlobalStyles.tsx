@@ -75,6 +75,8 @@ export const GlobalStyles: React.FC<GlobalStylesProps> = ({ config }) => {
       root.style.setProperty('--color-text-muted', '#666666');
       root.style.setProperty('--color-selection', 'rgba(0, 0, 0, 0.15)');
       root.style.setProperty('--color-selection-text', '#1a1a1a');
+      root.style.setProperty('--color-line', 'rgba(0, 0, 0, 0.10)');
+      root.style.setProperty('--brand-logo-filter', 'brightness(0)');
       root.classList.add('light-theme');
       root.classList.remove('dark-theme');
     } else {
@@ -83,6 +85,8 @@ export const GlobalStyles: React.FC<GlobalStylesProps> = ({ config }) => {
       root.style.setProperty('--color-text-muted', THEME.colors.textMuted);
       root.style.setProperty('--color-selection', THEME.colors.selectionBg);
       root.style.setProperty('--color-selection-text', THEME.colors.textMain);
+      root.style.setProperty('--color-line', 'rgba(255, 255, 255, 0.10)');
+      root.style.setProperty('--brand-logo-filter', 'brightness(0) invert(1)');
       root.classList.add('dark-theme');
       root.classList.remove('light-theme');
     }

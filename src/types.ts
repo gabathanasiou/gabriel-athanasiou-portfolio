@@ -29,6 +29,40 @@ export interface ExternalLink {
   url: string;
 }
 
+export type WordmarkStyle =
+  | 'auto'
+  | 'wide'
+  | 'thin'
+  | 'black'
+  | 'serif'
+  | 'editorial'
+  | 'mono'
+  | 'lower'
+  | 'tight';
+
+export type BrandTreatment = 'mono' | 'colour' | 'adaptive';
+
+export interface Brand {
+  id: string;
+  name: string;
+  logo?: string | null;
+  /** Original colour artwork, used on the light site. */
+  logoColour?: string | null;
+  /**
+   * Colour-only overlay (saturated pixels; transparent elsewhere). Layered on
+   * top of the mono silhouette, which is tinted white on dark / black on light.
+   */
+  logoColourMono?: string | null;
+  website?: string | null;
+  scale?: number;
+  wordmark?: WordmarkStyle;
+  /**
+   * `colour` keeps the original artwork at all times (e.g. a dark box with
+   * white text). `adaptive` layers `logoColourMono` over the theme-tinted mono.
+   */
+  treatment?: BrandTreatment;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -39,7 +73,8 @@ export interface Project {
   keywords?: string[]; // Optional search keywords (not currently emitted by the pipeline)
   director?: string; // Optional search field (not currently emitted by the pipeline)
   productionCompany: string; // Production company that produced the work
-  client?: string; // Optional client/brand field
+  client?: string; // Legacy free-text client (migration fallback)
+  brandIds?: string[]; // Linked Brands record IDs
   year: string;
   releaseDate?: string; // Full release date from Airtable (YYYY-MM-DD)
   workDate?: string; // Full work/production date from Airtable (YYYY-MM-DD)
@@ -116,6 +151,15 @@ export interface HomeConfig {
   
   // Layout options
   aboutLayout?: string; // 'standard' for now
+
+  // Brand logo wall — curated per portfolio in Airtable Settings → Home Brands
+  brandWall?: {
+    enabled?: boolean;
+    label?: string;
+    layout?: 'inline' | 'grid' | 'marquee';
+    colourOnHover?: boolean;
+    brandIds?: string[]; // Record IDs, in display order
+  };
   
   // Existing fields
   showreel?: {

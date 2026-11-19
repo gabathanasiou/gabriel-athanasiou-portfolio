@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { Project, BlogPost, HomeConfig } from './types';
+import { Brand, Project, BlogPost, HomeConfig } from './types';
 import { cmsService } from './services/cmsService';
 import { analyticsService } from './services/analyticsService';
 import { useBackgroundDataSync } from './hooks/useBackgroundDataSync';
@@ -23,6 +23,9 @@ const BlogView = lazy(() => import('./components/views/BlogView').then(m => ({ d
 const BlogPostView = lazy(() => import('./components/views/BlogPostView').then(m => ({ default: m.BlogPostView })));
 const AboutView = lazy(() => import('./components/views/AboutView').then(m => ({ default: m.AboutView })));
 const GameView = lazy(() => import('./components/views/GameView').then(m => ({ default: m.GameView })));
+const BrandWallPreview = import.meta.env.DEV
+  ? lazy(() => import('./components/views/BrandWallPreview').then(m => ({ default: m.BrandWallPreview })))
+  : null;
 
 // Helper function to get page title from pathname
 const getPageTitle = (pathname: string): string => {
@@ -32,16 +35,18 @@ const getPageTitle = (pathname: string): string => {
   if (pathname === '/journal') return 'Journal';
   if (pathname.startsWith('/journal/')) return 'Journal Post';
   if (pathname === '/about') return 'About';
+  if (pathname === '/dev/brands') return 'Brand wall preview';
   return 'Page';
 };
 
 export default function App() {
-  const [data, setData] = useState<{ projects: Project[], posts: BlogPost[], config: HomeConfig }>({ projects: [], posts: [], config: {} });
+  const [data, setData] = useState<{ projects: Project[], posts: BlogPost[], brands: Brand[], config: HomeConfig }>({ projects: [], posts: [], brands: [], config: {} });
   const [loading, setLoading] = useState(true);
   const [showContent, setShowContent] = useState(false);
   const [hoveredImage, setHoveredImage] = useState<{ url: string | null; fallback: string | null }>({ url: null, fallback: null });
 
   const location = useLocation();
+  const isBrandWallPreview = import.meta.env.DEV && location.pathname === '/dev/brands';
   const previousPathnameRef = useRef(location.pathname);
 
   // Background sync is now managed by the standalone data repository via jsDelivr cache-busting
@@ -60,7 +65,7 @@ export default function App() {
       } catch (error) {
         console.error('Failed to initialize app:', error);
         setLoading(false);
-        setData({ projects: [], posts: [], config: {} });
+        setData({ projects: [], posts: [], brands: [], config: {} });
       }
     };
     init();
@@ -91,8 +96,10 @@ export default function App() {
   return (
     <>
       <GlobalStyles config={data.config} />
-      <Cursor activeImageUrl={hoveredImage.url} fallbackUrl={hoveredImage.fallback} />
-      <Navigation showLinks={true} config={data.config} />
+      {!isBrandWallPreview && (
+        <Cursor activeImageUrl={hoveredImage.url} fallbackUrl={hoveredImage.fallback} />
+      )}
+      {!isBrandWallPreview && <Navigation showLinks={true} config={data.config} />}
 
       <div className={`bg-bg-main min-h-screen text-text-main font-sans selection:bg-white/20 antialiased overflow-x-clip transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
         <main>
@@ -135,6 +142,7 @@ export default function App() {
                     <HomeView
                       projects={data.projects}
                       posts={data.posts}
+                      brands={data.brands}
                       config={data.config}
                     />
                   </>
@@ -145,6 +153,7 @@ export default function App() {
                     <SEO title={data.config?.workSectionLabel || "Filmography"} config={data.config} />
                     <IndexView
                       projects={data.projects}
+                      brands={data.brands}
                       onHover={setHoveredImage}
                       config={data.config}
                     />
@@ -155,6 +164,7 @@ export default function App() {
                   <ProjectDetailView
                     allProjects={data.projects}
                     allPosts={data.posts}
+                    brands={data.brands}
                     config={data.config}
                   />
                 } />
@@ -196,6 +206,11 @@ export default function App() {
                 } />
                 {/* ...existing code... */}
 
+                {/* Dev-only brand wall review */}
+                {BrandWallPreview && (
+                  <Route path="/dev/brands" element={<BrandWallPreview />} />
+                )}
+
                 {/* Fallback to Home */}
                 <Route path="*" element={
                   <>
@@ -203,6 +218,7 @@ export default function App() {
                     <HomeView
                       projects={data.projects}
                       posts={data.posts}
+                      brands={data.brands}
                       config={data.config}
                     />
                   </>
@@ -211,8 +227,8 @@ export default function App() {
             </PageTransition>
           </Suspense>
         </main>
-        {/* Footer - hidden on About page to avoid duplication */}
-        {location.pathname !== '/about' && <Footer config={data.config} />}
+        {/* Footer - hidden on About and the dev-only brand preview */}
+        {!isBrandWallPreview && location.pathname !== '/about' && <Footer config={data.config} />}
       </div>
     </>
   );

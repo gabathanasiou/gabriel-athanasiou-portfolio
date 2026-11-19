@@ -129,6 +129,35 @@ export const THEME = {
   },
 
   // --------------------------------------------------------------------------
+  // 4A. HOME PAGE BRAND WALL
+  // --------------------------------------------------------------------------
+  // The brands themselves are curated in Airtable (Settings → Home Brands);
+  // these are the shared design defaults for the three layout variants.
+  brandWall: {
+    // Logo artwork height (px); each brand can scale itself in Airtable.
+    logoHeight: 22,
+
+    // Base size for the typographic fallback when there is no logo file.
+    wordmarkSize: 24,
+
+    // Section rhythm, matching the filmstrip container.
+    sectionPadding: "py-16 md:py-24",
+    container: "mx-auto w-full max-w-7xl px-6 md:px-12",
+
+    // Grid variant
+    gridCell: "flex min-h-[104px] items-center justify-center border-r border-b p-6 md:min-h-[132px] md:p-8",
+
+    // Inline (default) and marquee spacing
+    inlineGap: "gap-x-10 gap-y-8 md:gap-x-16 md:gap-y-10",
+    marqueeGap: "gap-x-14 md:gap-x-20",
+
+    // Defaults when the Settings row is missing a value.
+    defaultLabel: "Brands I've worked with",
+    defaultLayout: "inline" as const,
+    defaultColourOnHover: false,
+  },
+
+  // --------------------------------------------------------------------------
   // 4B. CLOUDINARY IMAGE PRESETS
   // --------------------------------------------------------------------------
   // Control image quality and sizes across the site

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Project, BlogPost, HomeConfig } from '../../types';
+import { Brand, Project, BlogPost, HomeConfig } from '../../types';
 import { VideoEmbed } from '../VideoEmbed';
 import { CloseButton } from '../common/CloseButton';
 import { SocialShare } from '../SocialShare';
@@ -13,10 +13,13 @@ import { getOptimizedImageUrl, getSessionPreset } from '../../utils/imageOptimiz
 import { ProceduralThumbnail, useProceduralThumbnail } from '../ProceduralThumbnail';
 import { generateProceduralThumbnail } from '../../utils/generators/thumbnailGenerator';
 import { saveScrollPosition } from '../../utils/scrollRestoration';
+import { BrandMark } from '../brand/BrandMark';
+import { resolveProjectBrands } from '../../utils/brands';
 
 interface ProjectDetailViewProps {
     allProjects: Project[];
     allPosts: BlogPost[];
+    brands: Brand[];
     config: HomeConfig;
 }
 
@@ -77,7 +80,7 @@ const groupAwardsByFestival = (awards: string[]): { festival: string; awards: st
     }));
 };
 
-export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProjects, allPosts, config }) => {
+export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProjects, allPosts, brands, config }) => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
     const location = useLocation();
@@ -247,7 +250,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     };
 
     const isNarrative = project.type === 'Narrative';
-    const showClient = THEME.projectDetail.showBrand && !isNarrative && project.client;
+    const projectBrands = resolveProjectBrands(project.brandIds, brands);
+    const showClient = THEME.projectDetail.showBrand && !isNarrative && (projectBrands.length > 0 || !!project.client);
     const showProductionCompany = THEME.projectDetail.showClient && !!project.productionCompany;
 
     const hasCredits = project.credits && Array.isArray(project.credits) && project.credits.length > 0;
@@ -457,7 +461,35 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                             {showClient && (
                                 <div className="mb-8">
                                     <p className={`${THEME.typography.meta} text-text-muted mb-2`}>{project.type === 'Music Video' ? 'Artist' : 'Client'}</p>
-                                    <p className={THEME.typography.h3}>{project.client}</p>
+                                    {projectBrands.length > 0 ? (
+                                        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                                            {projectBrands.map(brand => {
+                                                const mark = (
+                                                    <BrandMark
+                                                        brand={brand}
+                                                        height={26}
+                                                        colourOnHover={false}
+                                                    />
+                                                );
+                                                return brand.website ? (
+                                                    <a
+                                                        key={brand.id}
+                                                        href={brand.website}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        aria-label={`Visit ${brand.name}`}
+                                                        className="opacity-90 transition-opacity hover:opacity-100"
+                                                    >
+                                                        {mark}
+                                                    </a>
+                                                ) : (
+                                                    <span key={brand.id}>{mark}</span>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <p className={THEME.typography.h3}>{project.client}</p>
+                                    )}
                                 </div>
                             )}
 

@@ -314,3 +314,33 @@
 .cta-button-glow:hover {
     text-shadow: 0 0 60px rgba(255, 255, 255, 0.25), 0 0 100px rgba(255, 255, 255, 0.15);
 }
+/* Brand wall marquee */
+@keyframes brandMarquee {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
+}
+
+.brand-marquee {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
+}
+
+.brand-marquee-track {
+    animation: brandMarquee 48s linear infinite;
+}
+
+.brand-marquee:hover .brand-marquee-track,
+.brand-marquee:focus-within .brand-marquee-track {
+    animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .brand-marquee {
+        -webkit-mask-image: none;
+        mask-image: none;
+    }
+
+    .brand-marquee-track {
+        animation: none;
+    }
+}

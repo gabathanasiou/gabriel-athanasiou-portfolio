@@ -2,14 +2,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 // import { saveScrollPosition } from '../../utils/scrollRestoration';
-import { Project, ProjectType, HomeConfig } from '../../types';
+import { Brand, Project, ProjectType, HomeConfig } from '../../types';
 import { THEME } from '../../theme';
 import { getOptimizedImageUrl, getSessionPreset } from '../../utils/imageOptimization';
 import { ProceduralThumbnail } from '../ProceduralThumbnail';
 import { OptimizedImage } from '../common/OptimizedImage';
+import { resolveHomeBrands } from '../../utils/brands';
 
 interface IndexViewProps { 
     projects: Project[]; 
+    brands: Brand[];
     onHover: (image: { url: string | null; fallback: string | null }) => void;
     config?: HomeConfig;
 }
@@ -23,10 +25,13 @@ interface IndexViewProps {
  * 
  * DO NOT use will-change-transform or long durations (2000ms+) as they cause jitter.
  */
-export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover, config }) => {
+export const IndexView: React.FC<IndexViewProps> = ({ projects, brands, onHover, config }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams] = useSearchParams();
+
+    const brandNamesFor = (project: Project): string =>
+        resolveHomeBrands(project.brandIds, brands).map(brand => brand.name).join(', ');
 
     const [showContent, setShowContent] = React.useState(false);
     React.useEffect(() => {
@@ -251,8 +256,8 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover, config 
             filtered = filtered.filter(p => {
                 // Search in title
                 if (p.title?.toLowerCase().includes(query)) return true;
-                // Search in client
-                if (p.client?.toLowerCase().includes(query)) return true;
+                // Search in linked brands (legacy Client text as fallback)
+                if ((brandNamesFor(p) || p.client || '').toLowerCase().includes(query)) return true;
                 // Search in production company
                 if (p.productionCompany?.toLowerCase().includes(query)) return true;
                 // Search in type (Narrative, Commercial, etc.)
@@ -300,8 +305,8 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover, config 
                     const aIsClientType = a.type === 'Commercial' || a.type === 'Documentary' || a.type === 'Music Video';
                     const bIsClientType = b.type === 'Commercial' || b.type === 'Documentary' || b.type === 'Music Video';
                     
-                    aVal = (aIsClientType ? (a.client || '') : (a.productionCompany || '')).toLowerCase();
-                    bVal = (bIsClientType ? (b.client || '') : (b.productionCompany || '')).toLowerCase();
+                    aVal = (aIsClientType ? (brandNamesFor(a) || a.client || '') : (a.productionCompany || '')).toLowerCase();
+                    bVal = (bIsClientType ? (brandNamesFor(b) || b.client || '') : (b.productionCompany || '')).toLowerCase();
                     break;
                 case 'genre':
                     aVal = (a.genre && a.genre.length > 0 ? a.genre[0] : '').toLowerCase();
@@ -559,9 +564,9 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover, config 
                                     {showCols.showClient && (
                                         <div className={`hidden md:block ${cols.client} text-[11px] font-normal text-white opacity-40 group-hover:opacity-80 transition uppercase tracking-wider`}>
                                             {(filter === 'Commercial' || filter === 'Documentary') 
-                                                ? (p.client || p.productionCompany || '–')
+                                                ? (brandNamesFor(p) || p.client || p.productionCompany || '–')
                                                 : filter === 'Music Video'
-                                                ? (p.client || p.productionCompany || '–')
+                                                ? (brandNamesFor(p) || p.client || p.productionCompany || '–')
                                                 : (p.productionCompany || '–')
                                             }
                                         </div>
@@ -639,7 +644,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, onHover, config 
                                     <div>
                                         <h2 className={`${THEME.typography.h3} opacity-90 group-hover:opacity-100 transition mb-1.5 tracking-tight`}>{p.title}</h2>
                                         <div className="text-[10px] tracking-[0.15em] uppercase text-gray-500 group-hover:text-gray-400 transition">
-                                            {p.client ? p.client : p.productionCompany}
+                                            {brandNamesFor(p) || p.client || p.productionCompany}
                                         </div>
                                     </div>
                                     <div className="text-right shrink-0 ml-4">

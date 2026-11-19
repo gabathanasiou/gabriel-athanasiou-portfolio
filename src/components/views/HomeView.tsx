@@ -2,16 +2,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // import { saveScrollPosition } from '../../utils/scrollRestoration';
-import { Project, BlogPost, HomeConfig } from '../../types';
+import { Brand, Project, BlogPost, HomeConfig } from '../../types';
 import { VideoEmbed } from '../VideoEmbed';
 import { THEME } from '../../theme';
 import { OptimizedImage } from '../common/OptimizedImage';
 import { ProceduralThumbnail } from '../ProceduralThumbnail';
 import { getSessionPreset, upgradePreset } from '../../utils/imageOptimization';
+import { BrandWall } from '../BrandWall';
+import { resolveHomeBrands } from '../../utils/brands';
 
 interface HomeViewProps {
     projects: Project[];
     posts: BlogPost[];
+    brands: Brand[];
     config: HomeConfig;
 }
 
@@ -24,7 +27,7 @@ interface HomeViewProps {
  * 
  * DO NOT use will-change-transform or long durations (2000ms+) as they cause jitter.
  */
-export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) => {
+export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, brands, config }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -41,6 +44,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
 
     const showShowreel = config.showreel?.enabled && config.showreel.videoUrl;
     const featuredProjects = projects.filter(p => p.isFeatured);
+    const homeBrands = resolveHomeBrands(config.brandWall?.brandIds, brands);
+    const showBrandWall = Boolean(config.brandWall?.enabled && homeBrands.length > 0);
+    const brandWallLabel = config.brandWall?.label
+        || (config.portfolioId === 'postproduction' ? 'Trusted by' : "Brands I've worked with");
+    const brandWallLayout = config.brandWall?.layout || 'inline';
 
     // Get hero projects (projects marked as isHero), fallback to first featured if none
     const heroProjects = featuredProjects.filter(p => p.isHero);
@@ -191,8 +199,19 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, config }) =
                 )}
             </div>
 
+            {/* Home brand wall — curated in Settings → Home Brands (Airtable) */}
+            {showBrandWall && (
+                <BrandWall
+                    brands={homeBrands}
+                    label={brandWallLabel}
+                    layout={brandWallLayout}
+                    colourOnHover={config.brandWall?.colourOnHover ?? false}
+                    className="pb-0 md:pb-0"
+                />
+            )}
+
             {/* FILMSTRIP SECTION */}
-            <div className={`${THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} bg-bg-main relative z-10`}>
+            <div className={`${showBrandWall ? 'pt-16 md:pt-24' : THEME.filmography.paddingTop} ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} bg-bg-main relative z-10`}>
                 <div className="max-w-7xl mx-auto">
                     <div className="flex justify-between items-end mb-16 border-b border-white/10 pb-4">
                         <span className={`${THEME.typography.meta} text-text-muted`}>Featured Work</span>

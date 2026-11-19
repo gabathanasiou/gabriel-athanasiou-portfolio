@@ -1,4 +1,4 @@
-import { Project, BlogPost, HomeConfig } from '../types';
+import { Brand, Project, BlogPost, HomeConfig } from '../types';
 import { calculateReadingTime } from '../utils/helpers/textHelpers';
 
 // Re-export commonly used utilities for backwards compatibility
@@ -12,6 +12,7 @@ export { calculateReadingTime };
 interface ApiResponse {
     projects: Project[];
     posts: BlogPost[];
+    brands: Brand[];
     config: HomeConfig;
 }
 
@@ -72,12 +73,13 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
         cachedData = {
             projects: data.projects || [],
             posts: data.posts || [],
+            brands: data.brands || [],
             config: data.config || getDefaultConfig()
         };
         cacheTimestamp = Date.now();
 
         if (import.meta.env.DEV) {
-            console.log(`[cmsService] ✅ Loaded from jsDelivr: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
+            console.log(`[cmsService] ✅ Loaded from jsDelivr: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts, ${cachedData.brands.length} brands`);
         }
 
         return cachedData;
@@ -111,6 +113,7 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
             return {
                 projects: [],
                 posts: [],
+                brands: [],
                 config: getDefaultConfig()
             };
         }
@@ -122,12 +125,13 @@ const processLoadedData = (data: any, source: string): ApiResponse => {
     cachedData = {
         projects: data.projects || [],
         posts: data.posts || [],
+        brands: data.brands || [],
         config: data.config || getDefaultConfig()
     };
     cacheTimestamp = Date.now();
 
     if (import.meta.env.DEV) {
-        console.log(`[cmsService] ✅ Loaded from ${source}: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts`);
+        console.log(`[cmsService] ✅ Loaded from ${source}: ${cachedData.projects.length} projects, ${cachedData.posts.length} posts, ${cachedData.brands.length} brands`);
         console.log(`[cmsService]    Portfolio ID from data: ${cachedData.config.portfolioId}`);
     }
 
