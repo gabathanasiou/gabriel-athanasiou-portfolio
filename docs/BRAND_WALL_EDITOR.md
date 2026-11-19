@@ -26,9 +26,14 @@ http://localhost:3000/wall-editor.html
 - Total logo height
 - Spacing multiplier (section padding + row/column gaps)
 - Per-brand `Scale`
-- Wall order (`Home Brands`)
+- Wall order by dragging directly in the wall:
+  - drop **on a logo** to swap the two logos
+  - drop **near the edge / between logos** to insert before or after
 - Add/remove brands
 - Label, layout and colour-on-hover
+
+The selected logo gets a lime chrome; a dashed outline means “swap here”, and a
+lime vertical line means “insert here”.
 
 The preview reads the published JSON from jsDelivr; use **Reload live** after a
 sync to pick up new data.

@@ -76,6 +76,7 @@ export const BrandMark: React.FC<BrandMarkProps> = ({
           src={brandImageUrl(brand.logo)}
           alt=""
           aria-hidden="true"
+          draggable={false}
           loading="lazy"
           decoding="async"
           onLoad={measure}
@@ -86,6 +87,7 @@ export const BrandMark: React.FC<BrandMarkProps> = ({
         <img
           src={brandImageUrl(brand.logoColourOverlay)}
           alt={`${brand.name} logo`}
+          draggable={false}
           loading="lazy"
           decoding="async"
           onError={() => setFailed(true)}
@@ -116,6 +118,7 @@ export const BrandMark: React.FC<BrandMarkProps> = ({
       <img
         src={brandImageUrl(source)}
         alt={`${brand.name} logo`}
+        draggable={false}
         loading="lazy"
         decoding="async"
         onLoad={measure}
@@ -133,6 +136,7 @@ export const BrandMark: React.FC<BrandMarkProps> = ({
           src={brandImageUrl(brand.logoColour)}
           alt=""
           aria-hidden="true"
+          draggable={false}
           loading="lazy"
           decoding="async"
           className="pointer-events-none absolute inset-0 m-auto max-w-full object-contain opacity-0 transition-opacity duration-500 group-hover:opacity-100"

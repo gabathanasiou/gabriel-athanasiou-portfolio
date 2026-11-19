@@ -112,7 +112,7 @@ export const BrandWallEditor: React.FC = () => {
   const [loading, setLoading] = useState<Mode | null>(null);
   const [error, setError] = useState('');
   const [previewDark, setPreviewDark] = useState(false);
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
   const [addId, setAddId] = useState('');
   const [notice, setNotice] = useState('');
 
@@ -143,6 +143,7 @@ export const BrandWallEditor: React.FC = () => {
 
   useEffect(() => {
     setPreviewDark(mode === 'directing');
+    setSelectedBrandId(null);
   }, [mode]);
 
   useEffect(() => {
@@ -183,6 +184,9 @@ export const BrandWallEditor: React.FC = () => {
     });
   }, [brands, wall?.brandIds, scaleMap]);
 
+  const selectedBrand = wallBrands.find((brand) => brand.id === selectedBrandId) ?? null;
+  const selectedIndex = selectedBrandId && wall ? wall.brandIds.indexOf(selectedBrandId) : -1;
+
   const availableBrands = useMemo(
     () => brands.filter((brand) => !(wall?.brandIds ?? []).includes(brand.id)).sort((a, b) => a.name.localeCompare(b.name)),
     [brands, wall?.brandIds]
@@ -191,11 +195,13 @@ export const BrandWallEditor: React.FC = () => {
   const removeBrand = (id: string) => {
     if (!wall) return;
     setWall({ brandIds: wall.brandIds.filter((brandId) => brandId !== id) });
+    if (selectedBrandId === id) setSelectedBrandId(null);
   };
 
   const addBrand = () => {
     if (!wall || !addId) return;
     setWall({ brandIds: [...wall.brandIds, addId] });
+    setSelectedBrandId(addId);
     setAddId('');
   };
 
@@ -205,6 +211,26 @@ export const BrandWallEditor: React.FC = () => {
     const [id] = next.splice(from, 1);
     next.splice(to, 0, id);
     setWall({ brandIds: next });
+  };
+
+  const reorderBrand = (from: number, to: number, mode: 'swap' | 'before' | 'after') => {
+    if (!wall) return;
+    const ids = [...wall.brandIds];
+    if (from < 0 || from >= ids.length || to < 0 || to >= ids.length || from === to) return;
+
+    if (mode === 'swap') {
+      [ids[from], ids[to]] = [ids[to], ids[from]];
+    } else {
+      const dragged = ids[from];
+      const target = ids[to];
+      const without = ids.filter((_, index) => index !== from);
+      const targetPos = without.indexOf(target);
+      if (targetPos < 0) return;
+      without.splice(mode === 'before' ? targetPos : targetPos + 1, 0, dragged);
+      ids.splice(0, ids.length, ...without);
+    }
+
+    setWall({ brandIds: ids });
   };
 
   const reset = () => {
@@ -301,8 +327,8 @@ export const BrandWallEditor: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex flex-col xl:flex-row">
-        <section className="min-w-0 flex-1 p-4 xl:p-8">
+      <main className="flex flex-col lg:flex-row">
+        <section className="min-w-0 flex-1 p-4 lg:p-6">
           {error && (
             <div className="mb-4 rounded-md border border-red-800 bg-red-950/60 px-3 py-2 text-sm text-red-200">
               {error}
@@ -330,6 +356,11 @@ export const BrandWallEditor: React.FC = () => {
                 colourOnHover={wall.colourOnHover}
                 logoHeight={wall.logoHeight}
                 spacing={wall.spacing}
+                edit={wall.layout === 'marquee' ? undefined : {
+                  selectedBrandId,
+                  onSelect: setSelectedBrandId,
+                  onReorder: reorderBrand
+                }}
                 className="pb-0 md:pb-0"
               />
             )}
@@ -337,13 +368,17 @@ export const BrandWallEditor: React.FC = () => {
 
           <div className="mx-auto mt-3 flex max-w-[1280px] flex-wrap items-center justify-between gap-2 text-xs text-zinc-500">
             <span>
-              {payload ? `${brands.length} brands loaded · ${wallBrands.length} on the wall · ${wall?.layout}` : 'Fetching live data…'}
+              {payload ? `${brands.length} brands loaded · ${wallBrands.length} on the wall` : 'Fetching live data…'}
             </span>
-            <span>{wall?.enabled ? 'Wall is on' : 'Wall is off on the live site'}</span>
+            <span>
+              {wall?.layout === 'marquee'
+                ? 'Marquee preview · switch to Inline or Grid to drag'
+                : 'Click a logo to select · drag to reorder'}
+            </span>
           </div>
         </section>
 
-        <aside className="we-scroll w-full space-y-6 border-t border-zinc-800 bg-zinc-900/60 p-5 xl:h-[calc(100vh-73px)] xl:w-[430px] xl:overflow-y-auto xl:border-l xl:border-t-0">
+        <aside className="we-scroll w-full space-y-6 border-t border-zinc-800 bg-zinc-900/60 p-5 lg:h-[calc(100vh-73px)] lg:w-[370px] lg:overflow-y-auto lg:border-l lg:border-t-0">
           {wall && payload ? (
             <>
               <Section title="Wall">
@@ -406,49 +441,62 @@ export const BrandWallEditor: React.FC = () => {
                 />
               </Section>
 
-              <Section title={`Brands on the wall (${wall.brandIds.length})`}>
-                <p className="text-xs text-zinc-500">Drag to reorder, or use the arrows. The order here is the order in Airtable.</p>
-                <div className="space-y-2">
-                  {wallBrands.map((brand, index) => (
-                    <div
-                      key={brand.id}
-                      onDragOver={(event) => event.preventDefault()}
-                      onDrop={() => {
-                        if (dragIndex !== null) moveBrand(dragIndex, index);
-                        setDragIndex(null);
-                      }}
-                      className="rounded-md border border-zinc-800 bg-zinc-950/70 p-3"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          draggable
-                          onDragStart={(event) => {
-                            setDragIndex(index);
-                            event.dataTransfer.effectAllowed = 'move';
-                            event.dataTransfer.setData('text/plain', String(index));
-                          }}
-                          className="cursor-grab select-none text-zinc-500"
-                          aria-hidden="true"
-                        >⋮⋮</span>
-                        <span className="min-w-0 flex-1 truncate text-sm text-zinc-100">{brand.name}</span>
-                        <span className="font-mono text-[11px] text-zinc-500">{(brand.scale ?? 1).toFixed(2)}×</span>
-                        <button type="button" className="px-1 text-zinc-400 hover:text-lime-300" onClick={() => moveBrand(index, index - 1)} aria-label={`Move ${brand.name} up`}>↑</button>
-                        <button type="button" className="px-1 text-zinc-400 hover:text-lime-300" onClick={() => moveBrand(index, index + 1)} aria-label={`Move ${brand.name} down`}>↓</button>
-                        <button type="button" className="px-1 text-zinc-500 hover:text-red-300" onClick={() => removeBrand(brand.id)} aria-label={`Remove ${brand.name}`}>×</button>
+              <Section title="Selected logo">
+                {selectedBrand ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm text-zinc-100">{selectedBrand.name}</p>
+                        <p className="text-[11px] text-zinc-500">
+                          Airtable Scale · drag the logo in the wall to reorder
+                        </p>
                       </div>
-                      <input
-                        type="range"
-                        min={0.5}
-                        max={1.5}
-                        step={0.05}
-                        value={scaleMap[brand.id] ?? 1}
-                        onChange={(event) => setScale(brand.id, Number(event.target.value))}
-                        className="mt-2 w-full"
-                        aria-label={`${brand.name} size scale`}
-                      />
+                      <span className="font-mono text-xs text-zinc-400">
+                        {(scaleMap[selectedBrand.id] ?? selectedBrand.scale ?? 1).toFixed(2)}×
+                      </span>
                     </div>
-                  ))}
-                </div>
+                    <input
+                      type="range"
+                      min={0.5}
+                      max={1.5}
+                      step={0.05}
+                      value={scaleMap[selectedBrand.id] ?? 1}
+                      onChange={(event) => setScale(selectedBrand.id, Number(event.target.value))}
+                      className="w-full"
+                      aria-label={`${selectedBrand.name} size scale`}
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className={buttonClass}
+                        onClick={() => moveBrand(selectedIndex, selectedIndex - 1)}
+                        disabled={selectedIndex <= 0}
+                      >
+                        ← Earlier
+                      </button>
+                      <button
+                        type="button"
+                        className={buttonClass}
+                        onClick={() => moveBrand(selectedIndex, selectedIndex + 1)}
+                        disabled={selectedIndex < 0 || selectedIndex >= wall.brandIds.length - 1}
+                      >
+                        Later →
+                      </button>
+                      <button
+                        type="button"
+                        className={`${buttonClass} hover:border-red-400 hover:text-red-300`}
+                        onClick={() => removeBrand(selectedBrand.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs leading-relaxed text-zinc-500">
+                    Click any logo in the wall to edit its size, move it, or remove it.
+                    Drag logos directly in the wall to reorder them.
+                  </p>
+                )}
               </Section>
 
               <Section title="Add brand">
@@ -476,7 +524,10 @@ export const BrandWallEditor: React.FC = () => {
                   <br />
                   <code className="text-zinc-400">npm run apply:wall -- --plan brand-wall-plan-{mode}.json --apply</code>
                 </p>
-                <pre className="max-h-64 overflow-auto rounded-md border border-zinc-800 bg-zinc-950 p-3 text-[11px] leading-relaxed text-zinc-400">{planJson}</pre>
+                <details className="rounded-md border border-zinc-800 bg-zinc-950">
+                  <summary className="cursor-pointer px-3 py-2 text-xs text-zinc-400">Show plan JSON</summary>
+                  <pre className="max-h-72 overflow-auto border-t border-zinc-800 p-3 text-[11px] leading-relaxed text-zinc-500">{planJson}</pre>
+                </details>
               </Section>
             </>
           ) : (
