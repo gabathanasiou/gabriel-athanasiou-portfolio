@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Brand } from '../types';
 import { THEME } from '../theme';
 import { BrandMark } from './brand/BrandMark';
@@ -63,6 +63,82 @@ function useIsDesktop(): boolean {
   return isDesktop;
 }
 
+function useViewportWidth(): number {
+  const [width, setWidth] = useState(
+    () => (typeof window === 'undefined' ? 1280 : window.innerWidth)
+  );
+
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  return width;
+}
+
+function packRows(
+  brands: Brand[],
+  widths: Map<string, number>,
+  containerWidth: number,
+  gap: number
+): Brand[][] {
+  const rows: Brand[][] = [];
+  let row: Brand[] = [];
+  let rowWidth = 0;
+
+  for (const brand of brands) {
+    const width = widths.get(brand.id) ?? 0;
+    const extra = row.length ? gap + width : width;
+    if (row.length > 0 && rowWidth + extra > containerWidth) {
+      rows.push(row);
+      row = [];
+      rowWidth = 0;
+    }
+    row.push(brand);
+    rowWidth += row.length === 1 ? width : gap + width;
+  }
+
+  if (row.length > 0) rows.push(row);
+
+  // A single trailing logo reads as a mistake. Move the narrowest item from
+  // the previous row into the last row, or merge the orphan upward.
+  if (rows.length > 1 && rows[rows.length - 1].length === 1) {
+    const last = rows[rows.length - 1][0];
+    const previous = rows[rows.length - 2];
+    const lastWidth = widths.get(last.id) ?? 0;
+
+    if (previous.length > 1) {
+      const candidates = previous
+        .map((brand, index) => ({
+          brand,
+          index,
+          width: widths.get(brand.id) ?? 0
+        }))
+        .sort((a, b) => a.width - b.width);
+
+      for (const candidate of candidates) {
+        if (candidate.width + gap + lastWidth <= containerWidth) {
+          previous.splice(candidate.index, 1);
+          rows[rows.length - 1] = [candidate.brand, last];
+          return rows;
+        }
+      }
+    }
+
+    const previousWidth = previous.reduce(
+      (sum, brand, index) => sum + (index ? gap : 0) + (widths.get(brand.id) ?? 0),
+      0
+    );
+    if (previousWidth + gap + lastWidth <= containerWidth) {
+      previous.push(last);
+      rows.pop();
+    }
+  }
+
+  return rows;
+}
+
 const BrandItem: React.FC<BrandItemProps> = ({
   brand,
   colourOnHover,
@@ -75,7 +151,7 @@ const BrandItem: React.FC<BrandItemProps> = ({
 }) => {
   const selected = edit?.selectedBrandId === brand.id;
   const className = [
-    'group inline-flex min-w-0 max-w-full items-center justify-center',
+    'group inline-flex flex-none min-w-0 max-w-full items-center justify-center',
     edit
       ? 'relative cursor-grab rounded-md px-2 py-1 opacity-100 outline-offset-4 transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-lime-400 active:cursor-grabbing'
       : 'opacity-60 transition-opacity duration-500 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-8',
@@ -108,6 +184,7 @@ const BrandItem: React.FC<BrandItemProps> = ({
         aria-label={`Edit ${brand.name}`}
         title="Click to edit · drag to reorder · drop on a logo to swap"
         data-brand-index={index}
+        data-brand-id={brand.id}
         onClick={() => edit.onSelect(brand.id)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
@@ -130,7 +207,7 @@ const BrandItem: React.FC<BrandItemProps> = ({
 
   if (!brand.website) {
     return (
-      <span className={className} style={style}>
+      <span className={className} style={style} data-brand-id={brand.id}>
         {mark}
       </span>
     );
@@ -144,6 +221,7 @@ const BrandItem: React.FC<BrandItemProps> = ({
       aria-label={`Visit ${brand.name}`}
       className={className}
       style={style}
+      data-brand-id={brand.id}
     >
       {mark}
     </a>
@@ -214,22 +292,75 @@ export const BrandWall: React.FC<BrandWallProps> = ({
   className = ''
 }) => {
   const isDesktop = useIsDesktop();
+  const viewportWidth = useViewportWidth();
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [drop, setDrop] = useState<DropState | null>(null);
   const dropRef = React.useRef<DropState | null>(null);
-
-  if (brands.length === 0) return null;
+  const measureRef = React.useRef<HTMLDivElement | null>(null);
+  const rowsSignatureRef = React.useRef('');
+  const [rows, setRows] = useState<Brand[][] | null>(null);
 
   const baseLogoHeight = logoHeight ?? THEME.brandWall.logoHeight;
   const spacingValue = Math.min(2, Math.max(0.5, spacing));
+  // Tight viewports get smaller logos instead of one lonely logo per line.
+  const widthScale = Math.min(1, Math.max(0.7, 0.7 + ((viewportWidth - 320) / 960) * 0.3));
+  const effectiveLogoHeight = baseLogoHeight * widthScale;
   const sectionPaddingTop = (isDesktop ? 64 : 48) * spacingValue;
-  const rowGap = (isDesktop ? 32 : 24) * spacingValue;
-  const columnGap = (isDesktop ? 48 : 32) * spacingValue;
-  const labelGap = (isDesktop ? 32 : 28) * spacingValue;
-  const gridPadding = (isDesktop ? 32 : 24) * spacingValue;
+  const rowGap = (isDesktop ? 32 : 24) * spacingValue * widthScale;
+  const columnGap = (isDesktop ? 48 : 32) * spacingValue * widthScale;
+  const labelGap = (isDesktop ? 32 : 28) * spacingValue * widthScale;
+  const gridPadding = (isDesktop ? 32 : 24) * spacingValue * widthScale;
   const sectionStyle = { paddingTop: `${sectionPaddingTop}px` };
   const container = THEME.brandWall.container;
   const section = `${THEME.brandWall.sectionPadding} ${className}`.trim();
+  const indexById = new Map(brands.map((brand, index) => [brand.id, index]));
+
+  const measureRows = useCallback(() => {
+    if (layout !== 'inline') {
+      rowsSignatureRef.current = '';
+      setRows(null);
+      return;
+    }
+
+    const wrapper = measureRef.current;
+    if (!wrapper) return;
+    const containerWidth = wrapper.clientWidth;
+    if (!containerWidth) return;
+
+    const elements = Array.from(
+      wrapper.querySelectorAll<HTMLElement>('[data-brand-id]')
+    );
+    if (elements.length !== brands.length) return;
+
+    const widths = new Map<string, number>();
+    for (const element of elements) {
+      const id = element.dataset.brandId;
+      if (!id) continue;
+      const width = element.getBoundingClientRect().width;
+      if (width <= 0) return;
+      widths.set(id, width);
+    }
+    if (brands.some((brand) => !widths.has(brand.id))) return;
+
+    const packed = packRows(brands, widths, containerWidth, columnGap);
+    const signature = packed
+      .map((row) => row.map((brand) => brand.id).join(','))
+      .join('|');
+    if (signature === rowsSignatureRef.current) return;
+    rowsSignatureRef.current = signature;
+    setRows(packed);
+  }, [brands, layout, columnGap, effectiveLogoHeight]);
+
+  useLayoutEffect(() => {
+    const wrapper = measureRef.current;
+    if (!wrapper) return;
+    measureRows();
+    const observer = new ResizeObserver(() => measureRows());
+    observer.observe(wrapper);
+    return () => observer.disconnect();
+  }, [measureRows]);
+
+  if (brands.length === 0) return null;
 
   const updateDrop = (next: DropState | null) => {
     dropRef.current = next;
@@ -362,7 +493,7 @@ export const BrandWall: React.FC<BrandWallProps> = ({
                 <BrandItem
                   brand={brand}
                   colourOnHover={colourOnHover}
-                  logoHeight={baseLogoHeight}
+                  logoHeight={effectiveLogoHeight}
                   index={index}
                   edit={edit}
                   dropTarget={drop?.mode === 'swap' && drop.index === index}
@@ -393,13 +524,13 @@ export const BrandWall: React.FC<BrandWallProps> = ({
             <MarqueeGroup
               brands={brands}
               colourOnHover={colourOnHover}
-              logoHeight={baseLogoHeight}
+              logoHeight={effectiveLogoHeight}
               gap={columnGap}
             />
             <MarqueeGroup
               brands={brands}
               colourOnHover={colourOnHover}
-              logoHeight={baseLogoHeight}
+              logoHeight={effectiveLogoHeight}
               gap={columnGap}
               hidden
             />
@@ -418,25 +549,59 @@ export const BrandWall: React.FC<BrandWallProps> = ({
           </span>
         </div>
         <div
-          className={`relative flex flex-wrap items-center justify-center ${THEME.brandWall.inlineGap}`}
-          style={{ rowGap: `${rowGap}px`, columnGap: `${columnGap}px` }}
+          ref={measureRef}
+          className="relative"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          {brands.map((brand, index) => (
-            <BrandItem
-              key={brand.id}
-              brand={brand}
-              colourOnHover={colourOnHover}
-              logoHeight={baseLogoHeight}
-              index={index}
-              edit={edit}
-              dropTarget={drop?.mode === 'swap' && drop.index === index}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            />
-          ))}
+          {rows ? (
+            <div className="flex flex-col" style={{ rowGap: `${rowGap}px` }}>
+              {rows.map((row, rowIndex) => (
+                <div
+                  key={rowIndex}
+                  className="flex items-center justify-center"
+                  style={{ columnGap: `${columnGap}px` }}
+                >
+                  {row.map((brand) => {
+                    const index = indexById.get(brand.id) ?? 0;
+                    return (
+                      <BrandItem
+                        key={brand.id}
+                        brand={brand}
+                        colourOnHover={colourOnHover}
+                        logoHeight={effectiveLogoHeight}
+                        index={index}
+                        edit={edit}
+                        dropTarget={drop?.mode === 'swap' && drop.index === index}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div
+              className={`flex flex-wrap items-center justify-center ${THEME.brandWall.inlineGap}`}
+              style={{ rowGap: `${rowGap}px`, columnGap: `${columnGap}px` }}
+            >
+              {brands.map((brand, index) => (
+                <BrandItem
+                  key={brand.id}
+                  brand={brand}
+                  colourOnHover={colourOnHover}
+                  logoHeight={effectiveLogoHeight}
+                  index={index}
+                  edit={edit}
+                  dropTarget={drop?.mode === 'swap' && drop.index === index}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                />
+              ))}
+            </div>
+          )}
           {dropLine}
         </div>
       </div>

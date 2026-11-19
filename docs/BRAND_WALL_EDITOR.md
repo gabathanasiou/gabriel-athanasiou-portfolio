@@ -35,6 +35,9 @@ http://localhost:3000/wall-editor.html
 The selected logo gets a lime chrome; a dashed outline means “swap here”, and a
 lime vertical line means “insert here”.
 
+The wall automatically reduces logo size and gaps on tight widths, and packs
+rows so the last row never contains a single logo.
+
 The preview reads the published JSON from jsDelivr; use **Reload live** after a
 sync to pick up new data.
 
