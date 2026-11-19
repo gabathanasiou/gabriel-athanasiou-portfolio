@@ -46,19 +46,19 @@ export interface Brand {
   id: string;
   name: string;
   logo?: string | null;
-  /** Original colour artwork, used on the light site. */
+  /** Original colour artwork, used by the Colour treatment. */
   logoColour?: string | null;
   /**
    * Colour-only overlay (saturated pixels; transparent elsewhere). Layered on
    * top of the mono silhouette, which is tinted white on dark / black on light.
    */
-  logoColourMono?: string | null;
+  logoColourOverlay?: string | null;
   website?: string | null;
   scale?: number;
   wordmark?: WordmarkStyle;
   /**
    * `colour` keeps the original artwork at all times (e.g. a dark box with
-   * white text). `adaptive` layers `logoColourMono` over the theme-tinted mono.
+   * white text). `adaptive` layers `logoColourOverlay` over the theme-tinted mono.
    */
   treatment?: BrandTreatment;
 }

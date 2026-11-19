@@ -26,7 +26,7 @@ export const BrandMark: React.FC<BrandMarkProps> = ({
   const [failed, setFailed] = useState(false);
   const scaledHeight = height * (brand.scale ?? 1);
   const alwaysColour = brand.treatment === 'colour';
-  const adaptive = brand.treatment === 'adaptive' && !!brand.logo && !!brand.logoColourMono;
+  const adaptive = brand.treatment === 'adaptive' && !!brand.logo && !!brand.logoColourOverlay;
   const source = alwaysColour ? (brand.logoColour ?? brand.logo) : brand.logo;
 
   if (adaptive && !failed) {
@@ -46,7 +46,7 @@ export const BrandMark: React.FC<BrandMarkProps> = ({
           style={{ height: scaledHeight, filter: 'var(--brand-logo-filter)' }}
         />
         <img
-          src={brandImageUrl(brand.logoColourMono)}
+          src={brandImageUrl(brand.logoColourOverlay)}
           alt={`${brand.name} logo`}
           loading="lazy"
           decoding="async"
