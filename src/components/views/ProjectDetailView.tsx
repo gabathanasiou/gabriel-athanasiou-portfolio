@@ -442,6 +442,20 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                                 </div>
                             </button>
                         )}
+                        {!hasHeroVideo && project.requestOnly && (
+                            <button
+                                onClick={() => {
+                                    analyticsService.trackEvent('contact_cta_click', { project_id: project.id, project_title: project.title });
+                                    navigate('/about');
+                                }}
+                                className={`group inline-flex items-center mix-blend-difference cursor-pointer outline-none`}
+                                aria-label="Contact to request viewing link"
+                            >
+                                <div className={`px-5 py-3 ${THEME.ui.button.radius} ${THEME.ui.button.border} ${THEME.ui.button.backdrop} bg-black/30 text-white/90 hover:bg-white/10 hover:border-white transition ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-[1.02]`}>
+                                    <span className={`${THEME.typography.meta} tracking-[0.25em]`}>REQUEST VIEWING LINK</span>
+                                </div>
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

@@ -81,6 +81,7 @@ export interface Project {
   description: string;
   isFeatured: boolean; // Appears on front page (Display Status = "Featured" or "Hero")
   isHero?: boolean; // Eligible to be hero on front page (Display Status = "Hero")
+  requestOnly?: boolean; // Visible project, but film URL is omitted; request-access CTA
   
   // Media
   heroImage: string; // URL
