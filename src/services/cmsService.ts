@@ -32,6 +32,10 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes client-side cache
 // detect portfolio mode from environment variable (set per Netlify site)
 const PORTFOLIO_MODE = import.meta.env.VITE_PORTFOLIO_MODE || 'directing';
 const JSDELIVR_DATA_URL = `https://cdn.jsdelivr.net/gh/gabathanasiou/gabriel-portfolio-data@data/${PORTFOLIO_MODE}/portfolio-data.json`;
+const PREVIEW_DATA_DIR = String(import.meta.env.VITE_PREVIEW_DATA_DIR || '').replace(/\/+$/, '');
+const PRIMARY_DATA_URL = PREVIEW_DATA_DIR
+    ? `${PREVIEW_DATA_DIR}/${PORTFOLIO_MODE}/portfolio-data.json`
+    : JSDELIVR_DATA_URL;
 const LOCAL_DATA_URL = `/${PORTFOLIO_MODE}/portfolio-data.json`;
 
 // Generate cache-busting URL with timestamp
@@ -43,7 +47,7 @@ const getCacheBustedUrl = (baseUrl: string): string => {
 
 if (import.meta.env.DEV) {
     console.log(`[cmsService] 🏁 Initialized in ${PORTFOLIO_MODE} mode`);
-    console.log(`[cmsService] 🌍 CDN URL: ${JSDELIVR_DATA_URL}`);
+    console.log(`[cmsService] 🌍 Primary URL: ${PRIMARY_DATA_URL}`);
     console.log(`[cmsService] 🏠 Local URL: ${LOCAL_DATA_URL}`);
 }
 
@@ -57,15 +61,15 @@ const fetchCachedData = async (): Promise<ApiResponse> => {
     // Try jsDelivr CDN first (primary source)
     try {
         // Add timestamp to bypass CDN cache and get fresh data
-        const freshUrl = getCacheBustedUrl(JSDELIVR_DATA_URL);
-        if (import.meta.env.DEV) console.log('[cmsService] Fetching fresh data from jsDelivr CDN');
+        const freshUrl = getCacheBustedUrl(PRIMARY_DATA_URL);
+        if (import.meta.env.DEV) console.log('[cmsService] Fetching fresh data from primary data URL');
 
         const response = await fetch(freshUrl, {
             cache: 'no-store' // Bypass browser cache
         });
 
         if (!response.ok) {
-            throw new Error(`Cloudinary fetch failed: ${response.statusText}`);
+            throw new Error(`Primary data fetch failed: ${response.statusText}`);
         }
 
         const data = await response.json();
