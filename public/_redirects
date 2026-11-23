@@ -1,2 +1,5 @@
+# Optional agent files should return 404, not the SPA shell with 200.
+/.well-known/*  /404.html  404
+
 # SPA fallback - serves static files from /public first, then index.html for routes
 /* /index.html 200

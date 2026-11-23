@@ -66,6 +66,12 @@ port = 8888
 autoLaunch = false
 
 
+# Optional agent files should 404 rather than return the SPA shell.
+[[redirects]]
+from = "/.well-known/*"
+to = "/404.html"
+status = 404
+
 # SPA fallback - the edge function will intercept specific routes via its config export
 [[redirects]]
 from = "/*"

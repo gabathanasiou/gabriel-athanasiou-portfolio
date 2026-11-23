@@ -46,8 +46,46 @@ const SITES: Record<'directing' | 'postproduction', SiteMeta> = {
  * og:url, and social crawlers (which do not run JavaScript) never see the
  * correct metadata for lemonpost.studio.
  */
+/**
+ * Build the per-portfolio llms.txt index.
+ *
+ * Google Search ignores llms.txt, but Chrome Lighthouse's agentic-browsing
+ * audit validates it, and coding agents can use it as a compact site map.
+ */
+function buildLlmsTxt(portfolioMode: 'directing' | 'postproduction'): string {
+    const site = SITES[portfolioMode];
+    const isPost = portfolioMode === 'postproduction';
+    const pages: Array<[string, string, string]> = isPost
+        ? [
+            ['Home', '/', 'Featured post-production work and showreel.'],
+            ['All Work', '/work', 'Colour grading and editing portfolio.'],
+            ['About', '/about', 'Studio profile and contact.'],
+        ]
+        : [
+            ['Home', '/', 'Featured directing work and showreel.'],
+            ['Filmography', '/work', 'Narrative, commercial and music video projects.'],
+            ['Journal', '/journal', 'Notes and behind-the-scenes writing.'],
+            ['About', '/about', 'Biography and contact.'],
+            ['Game', '/game', 'Filmography trivia.'],
+        ];
+
+    return [
+        `# ${site.name} - ${isPost ? 'Post-Production' : 'Director'}`,
+        '',
+        `> ${site.description}`,
+        '',
+        '## Pages',
+        ...pages.map(([label, path, description]) => `- [${label}](${site.url}${path}): ${description}`),
+        '',
+        '## Machine-readable',
+        `- [Sitemap](${site.url}/sitemap.xml)`,
+        '',
+    ].join('\n');
+}
+
 function portfolioHtmlPlugin(portfolioMode: 'directing' | 'postproduction'): Plugin {
     const site = SITES[portfolioMode];
+    const llmsTxt = buildLlmsTxt(portfolioMode);
     const fontHref = `https://fonts.googleapis.com/css2?${site.fonts}&display=swap`;
     const fontLinks = [
         `<link rel="preload" as="style" href="${fontHref}">`,
@@ -71,6 +109,24 @@ function portfolioHtmlPlugin(portfolioMode: 'directing' | 'postproduction'): Plu
                     .replaceAll('__SITE_URL__', site.url)
                     .replaceAll('__FONT_LINKS__', fontLinks);
             },
+        },
+        generateBundle() {
+            this.emitFile({
+                type: 'asset',
+                fileName: 'llms.txt',
+                source: llmsTxt,
+            });
+        },
+        configureServer(server) {
+            server.middlewares.use((req, res, next) => {
+                const pathname = (req.url || '').split('?')[0];
+                if (pathname !== '/llms.txt') {
+                    next();
+                    return;
+                }
+                res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+                res.end(llmsTxt);
+            });
         },
     };
 }
