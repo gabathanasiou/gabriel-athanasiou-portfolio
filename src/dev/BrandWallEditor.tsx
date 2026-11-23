@@ -397,7 +397,7 @@ export const BrandWallEditor: React.FC = () => {
         </section>
 
         {!previewMode && (
-          <aside className="we-scroll w-full space-y-6 border-t border-zinc-800 bg-zinc-900/60 p-5 lg:h-[calc(100vh-73px)] lg:w-[370px] lg:overflow-y-auto lg:border-l lg:border-t-0">
+          <aside className="we-scroll w-full space-y-6 border-t border-zinc-800 bg-zinc-900/60 p-5 lg:h-[calc(100dvh-73px)] lg:w-[370px] lg:overflow-y-auto lg:border-l lg:border-t-0">
           {wall && payload ? (
             <>
               <Section title="Wall">

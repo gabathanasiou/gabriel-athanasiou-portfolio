@@ -111,6 +111,8 @@ export function PasswordGate({ children }: PasswordGateProps) {
           
           <input
             type="password"
+            name="password"
+            autoComplete="current-password"
             className={styles.input}
             placeholder="Password"
             value={password}

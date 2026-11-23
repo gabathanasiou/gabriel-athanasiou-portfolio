@@ -6,9 +6,11 @@ interface VideoEmbedProps {
   url: string;
   autoplay?: boolean;
   muted?: boolean;
+  /** Accessible frame title; screen readers announce it for the iframe. */
+  title?: string;
 }
 
-export const VideoEmbed: React.FC<VideoEmbedProps> = ({ url, autoplay = false, muted = false }) => {
+export const VideoEmbed: React.FC<VideoEmbedProps> = ({ url, autoplay = false, muted = false, title = 'Video player' }) => {
   const [embedUrl, setEmbedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -66,8 +68,8 @@ export const VideoEmbed: React.FC<VideoEmbedProps> = ({ url, autoplay = false, m
     <div className="w-full h-full bg-black absolute inset-0">
       <iframe
         src={embedUrl}
-        className="w-full h-full absolute inset-0"
-        frameBorder="0"
+        title={title}
+        className="w-full h-full absolute inset-0 border-0"
         referrerPolicy="strict-origin-when-cross-origin"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen

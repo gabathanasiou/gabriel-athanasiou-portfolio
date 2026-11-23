@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { THEME } from '../theme';
 import { HomeConfig } from '../types';
@@ -12,64 +11,58 @@ interface GlobalStylesProps {
   config?: HomeConfig;
 }
 
+// The portfolio mode is baked in at build time, so the theme is correct even if
+// the CMS fetch fails. config.portfolioId still wins when present.
+const BUILD_MODE = import.meta.env.VITE_PORTFOLIO_MODE === 'postproduction'
+  ? 'postproduction'
+  : 'directing';
+
 /**
  * Applies the settings from theme.ts as CSS Custom Properties (Variables).
- * Handles dynamic font loading and theme mode switching.
+ * Handles custom font loading and theme token switching.
+ *
+ * Default typefaces and colour tokens are set in src/index.css at build time;
+ * this component only overrides them for CMS-configured custom fonts.
  */
 export const GlobalStyles: React.FC<GlobalStylesProps> = ({ config }) => {
-  // Load custom fonts based on portfolio type
+  const portfolioId = config?.portfolioId || BUILD_MODE;
+  const isPostProduction = portfolioId === 'postproduction';
+
+  // Load a custom font only when the CMS asks for one; defaults ship in the CSS.
   useEffect(() => {
-    const isPostProduction = config?.portfolioId === 'postproduction';
     const root = document.documentElement;
 
     if (isPostProduction) {
-      // Premium font pairing for Lemon Post Studio
-      const fontsToLoad = [
-        { name: 'Outfit', weights: '300;400;500;600;700' },
-        { name: 'DM Sans', weights: '300;400;500;600;700' }
-      ];
-
-      fontsToLoad.forEach(font => {
-        const fontQuery = font.name.replace(/ /g, '+');
-        if (!document.querySelector(`link[href*="${fontQuery}"]`)) {
-          const link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = `https://fonts.googleapis.com/css2?family=${fontQuery}:wght@${font.weights}&display=swap`;
-          document.head.appendChild(link);
-        }
-      });
-
       root.style.setProperty('--font-sans', '"DM Sans", system-ui, sans-serif');
       root.style.setProperty('--font-serif', '"Outfit", system-ui, sans-serif');
       root.style.setProperty('--font-portfolio', '"DM Sans"');
-    } else {
-      // Custom font from config for other portfolios
-      const customFont = config?.fontFamily;
-      if (customFont && customFont !== 'Inter') {
-        const fontQuery = customFont.replace(/ /g, '+');
-        if (!document.querySelector(`link[href*="${fontQuery}"]`)) {
-          const link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = `https://fonts.googleapis.com/css2?family=${fontQuery}:wght@300;400;500;600;700&display=swap`;
-          document.head.appendChild(link);
-        }
-
-        root.style.setProperty('--font-sans', `"${customFont}", system-ui, sans-serif`);
-        root.style.setProperty('--font-portfolio', `"${customFont}"`);
-      } else {
-        // Fallback to theme defaults
-        root.style.setProperty('--font-sans', THEME.fonts.sans);
-        root.style.setProperty('--font-serif', THEME.fonts.serif);
-      }
+      return;
     }
-  }, [config?.fontFamily, config?.portfolioId]);
+
+    const customFont = config?.fontFamily;
+    if (customFont && customFont !== 'Inter') {
+      const fontQuery = customFont.replace(/ /g, '+');
+      if (!document.querySelector(`link[href*="${fontQuery}"]`)) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `https://fonts.googleapis.com/css2?family=${fontQuery}:wght@300;400;500;600;700&display=swap`;
+        document.head.appendChild(link);
+      }
+
+      root.style.setProperty('--font-sans', `"${customFont}", system-ui, sans-serif`);
+      root.style.setProperty('--font-portfolio', `"${customFont}"`);
+    } else {
+      root.style.setProperty('--font-sans', THEME.fonts.sans);
+      root.style.setProperty('--font-serif', THEME.fonts.serif);
+      root.style.setProperty('--font-portfolio', THEME.fonts.sans);
+    }
+  }, [config?.fontFamily, isPostProduction]);
 
   // Apply theme mode & selection colors
   useEffect(() => {
     const root = document.documentElement;
-    const isLight = config?.portfolioId === 'postproduction';
 
-    if (isLight) {
+    if (isPostProduction) {
       root.style.setProperty('--color-bg-main', '#ffffff');
       root.style.setProperty('--color-text-main', '#1a1a1a');
       root.style.setProperty('--color-text-muted', '#666666');
@@ -90,7 +83,7 @@ export const GlobalStyles: React.FC<GlobalStylesProps> = ({ config }) => {
       root.classList.add('dark-theme');
       root.classList.remove('light-theme');
     }
-  }, [config?.portfolioId]);
+  }, [isPostProduction]);
 
   return null;
 };

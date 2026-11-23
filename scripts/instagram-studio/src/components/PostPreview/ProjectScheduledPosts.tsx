@@ -196,7 +196,7 @@ export function ProjectScheduledPosts({
   };
 
   // Sort by date/time (using storage times for consistent ordering)
-  const sortedPosts = [...posts].sort((a, b) => {
+  const sortedPosts = posts.toSorted((a, b) => {
     const dateA = new Date(`${a.scheduleSlot.scheduledDate}T${a.scheduleSlot.scheduledTime}`);
     const dateB = new Date(`${b.scheduleSlot.scheduledDate}T${b.scheduleSlot.scheduledTime}`);
     return dateA.getTime() - dateB.getTime();

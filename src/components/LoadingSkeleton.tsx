@@ -44,7 +44,7 @@ export const LoadingSkeleton: React.FC = () => {
 
       {/* Generic content placeholder - works for any page */}
       <div className={`${THEME.header.height}`}></div>
-      <div className={`h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] ${THEME.header.paddingX} pt-20 pb-20 animate-pulse`}>
+      <div className={`h-[calc(100dvh-6rem)] md:h-[calc(100dvh-8rem)] ${THEME.header.paddingX} pt-20 pb-20 animate-pulse`}>
         <div className="w-full h-full bg-white/[0.02] rounded" />
       </div>
     </div>

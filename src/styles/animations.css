@@ -55,11 +55,11 @@
 /* Blog post link styling */
 .blog-content a {
     color: rgba(255, 255, 255, 0.9);
-    text-decoration: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    padding-bottom: 2px;
-    transition: all 0.3s ease;
-    display: inline-block;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.3);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition: color 0.3s ease, text-decoration-color 0.3s ease;
 }
 
 .blog-content a::after {
@@ -72,7 +72,7 @@
 
 .blog-content a:hover {
     color: rgba(255, 255, 255, 1);
-    border-bottom-color: rgba(255, 255, 255, 0.6);
+    text-decoration-color: rgba(255, 255, 255, 0.6);
 }
 
 .blog-content a:hover::after {
@@ -128,39 +128,52 @@
 
 /* Staggered fade-in for child elements */
 .page-visible>* {
+    --stagger-time: 0.1s;
     animation: staggerFadeIn 3.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+    /* Fallback for browsers without sibling-index(); overridden below. */
+    animation-delay: calc(var(--sibling-index, 0) * var(--stagger-time));
 }
 
-.page-visible>*:nth-child(1) {
-    animation-delay: 0.1s;
+/* MANDATORY: gate sibling-index() with a literal time value, not var(). */
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+    .page-visible>* {
+        animation-delay: calc(sibling-index() * var(--stagger-time));
+    }
 }
 
-.page-visible>*:nth-child(2) {
-    animation-delay: 0.2s;
-}
+/* Higher-specificity nth-child fallback must not override sibling-index(). */
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+    .page-visible>*:nth-child(1) {
+        animation-delay: 0.1s;
+    }
 
-.page-visible>*:nth-child(3) {
-    animation-delay: 0.3s;
-}
+    .page-visible>*:nth-child(2) {
+        animation-delay: 0.2s;
+    }
 
-.page-visible>*:nth-child(4) {
-    animation-delay: 0.4s;
-}
+    .page-visible>*:nth-child(3) {
+        animation-delay: 0.3s;
+    }
 
-.page-visible>*:nth-child(5) {
-    animation-delay: 0.5s;
-}
+    .page-visible>*:nth-child(4) {
+        animation-delay: 0.4s;
+    }
 
-.page-visible>*:nth-child(6) {
-    animation-delay: 0.6s;
-}
+    .page-visible>*:nth-child(5) {
+        animation-delay: 0.5s;
+    }
 
-.page-visible>*:nth-child(7) {
-    animation-delay: 0.7s;
-}
+    .page-visible>*:nth-child(6) {
+        animation-delay: 0.6s;
+    }
 
-.page-visible>*:nth-child(8) {
-    animation-delay: 0.8s;
+    .page-visible>*:nth-child(7) {
+        animation-delay: 0.7s;
+    }
+
+    .page-visible>*:nth-child(8) {
+        animation-delay: 0.8s;
+    }
 }
 
 @keyframes staggerFadeIn {
@@ -179,19 +192,29 @@
 }
 
 .page-visible .hero-content>* {
+    --stagger-time: 0.2s;
     animation: heroTextFadeIn 3.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--sibling-index, 0) * var(--stagger-time));
 }
 
-.page-visible .hero-content>*:nth-child(1) {
-    animation-delay: 0.3s;
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+    .page-visible .hero-content>* {
+        animation-delay: calc(sibling-index() * var(--stagger-time));
+    }
 }
 
-.page-visible .hero-content>*:nth-child(2) {
-    animation-delay: 0.5s;
-}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+    .page-visible .hero-content>*:nth-child(1) {
+        animation-delay: 0.3s;
+    }
 
-.page-visible .hero-content>*:nth-child(3) {
-    animation-delay: 0.7s;
+    .page-visible .hero-content>*:nth-child(2) {
+        animation-delay: 0.5s;
+    }
+
+    .page-visible .hero-content>*:nth-child(3) {
+        animation-delay: 0.7s;
+    }
 }
 
 @keyframes heroFadeIn {
@@ -340,7 +363,109 @@
         mask-image: none;
     }
 
-    .brand-marquee-track {
+    /* Persistent/decorative motion: stop it entirely. */
+    .brand-marquee-track,
+    .hero-anim,
+    .hero-anim-gradient,
+    .cta-gradient-1,
+    .cta-gradient-2,
+    .cta-gradient-3,
+    .img-loading {
         animation: none;
+    }
+
+    .animate-slow-spin {
+        animation: none;
+        transform: scale(3);
+    }
+
+    /* Entrance fades: show the final state instead of animating into it. */
+    .page-visible>*,
+    .page-visible .hero-section,
+    .page-visible .hero-content>*,
+    .page-visible .grid-item,
+    .animate-fade-in-up,
+    .animate-reveal,
+    .animate-view-enter,
+    .animate-view-exit {
+        animation: none;
+    }
+
+    .animate-fade-in-up,
+    .animate-reveal {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .page-transition-wrapper {
+        transition: none;
+    }
+}
+
+/* Sliding filter underline — anchor positioning, with a static fallback.
+   The indicator follows the active tab; anchor() insets transition between
+   tabs in browsers that support anchor transitions (Chrome, Safari 26). */
+.filter-tabs,
+.role-tabs,
+.journal-tabs {
+    position: relative;
+}
+
+.filter-tabs::before,
+.role-tabs::before,
+.journal-tabs::before {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    border-block-end: 1px solid currentColor;
+    inset-block-start: calc(anchor(self-end) - 1px);
+    inset-inline-start: anchor(self-start);
+    inset-inline-end: anchor(self-end);
+}
+
+.filter-tabs::before {
+    position-anchor: --filter-active;
+}
+
+.role-tabs::before {
+    position-anchor: --role-active;
+}
+
+.journal-tabs::before {
+    position-anchor: --journal-active;
+}
+
+.filter-tabs .filter-tab.is-active {
+    anchor-name: --filter-active;
+}
+
+.role-tabs .role-tab.is-active {
+    anchor-name: --role-active;
+}
+
+.journal-tabs .journal-tab.is-active {
+    anchor-name: --journal-active;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .filter-tabs::before,
+    .role-tabs::before,
+    .journal-tabs::before {
+        transition: inset 0.25s ease;
+    }
+}
+
+/* Static underline when anchor positioning is unavailable. */
+@supports not (position-anchor: --active) {
+    .filter-tabs::before,
+    .role-tabs::before,
+    .journal-tabs::before {
+        content: none;
+    }
+
+    .filter-tabs .filter-tab.is-active,
+    .role-tabs .role-tab.is-active,
+    .journal-tabs .journal-tab.is-active {
+        border-color: currentColor;
     }
 }

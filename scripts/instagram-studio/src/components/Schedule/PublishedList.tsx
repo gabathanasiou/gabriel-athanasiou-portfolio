@@ -11,7 +11,7 @@ interface PublishedListProps {
 export function PublishedList({ posts, onRevertToScheduled }: PublishedListProps) {
   // Sort by published date, most recent first
   const sortedPosts = useMemo(() => {
-    return [...posts].sort((a, b) => {
+    return posts.toSorted((a, b) => {
       const dateA = a.scheduleSlot.publishedAt ? new Date(a.scheduleSlot.publishedAt) : new Date(0);
       const dateB = b.scheduleSlot.publishedAt ? new Date(b.scheduleSlot.publishedAt) : new Date(0);
       return dateB.getTime() - dateA.getTime();

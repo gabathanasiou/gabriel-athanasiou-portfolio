@@ -30,7 +30,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ config }) => {
     const roleText = isPostProduction ? null : 'Freelance Director';
     
     return (
-        <section className={`pt-24 md:pt-28 ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-[calc(100vh-80px)] flex flex-col transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
+        <section className={`pt-24 md:pt-28 ${THEME.filmography.paddingBottom} ${THEME.header.paddingX} min-h-[calc(100dvh-80px)] flex flex-col transition-opacity ${THEME.pageTransitions.duration} ${THEME.pageTransitions.enabled && showContent ? 'opacity-100' : 'opacity-0'} animate-fade-in-up`}>
             {/* Scroll Top on Mount */}
             <span className="hidden" ref={() => window.scrollTo(0,0)}></span>
             

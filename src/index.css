@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Default theme tokens — set before the CMS fetch so the first paint has the
+   right typefaces and the post-production build never flashes dark. */
+:root {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-portfolio: 'Inter';
+}
+
+html.light-theme {
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-serif: 'Outfit', system-ui, sans-serif;
+  --font-portfolio: 'DM Sans';
+}

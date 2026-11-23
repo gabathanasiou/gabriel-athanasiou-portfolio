@@ -101,7 +101,7 @@ export function ProjectList({
 
   // Sort projects by year (and maintain original order within same year)
   const sortedProjects = useMemo(() => {
-    const sorted = [...filteredProjects].sort((a, b) => {
+    const sorted = filteredProjects.toSorted((a, b) => {
       const yearA = parseInt(a.year) || 0;
       const yearB = parseInt(b.year) || 0;
       return sortOrder === 'newest' ? yearB - yearA : yearA - yearB;

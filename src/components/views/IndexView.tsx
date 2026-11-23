@@ -285,7 +285,7 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, brands, onHover,
         const effectiveSortColumn = sortColumn || 'year';
         const effectiveSortDirection = sortDirection || 'desc';
         
-        filtered = [...filtered].sort((a, b) => {
+        filtered = filtered.toSorted((a, b) => {
             let aVal: string | undefined;
             let bVal: string | undefined;
             
@@ -342,19 +342,18 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, brands, onHover,
                     {/* Role Filter (Post-Production Only) - Above Category Filter */}
                     {showRoleFilter && availableRoles.length > 1 && (
                         <>
-                            <div className="relative flex-1 w-full md:w-auto overflow-visible">
-                                <div className={`flex gap-4 md:gap-8 text-[10px] md:text-[11px] uppercase tracking-[0.15em] md:tracking-[0.2em] text-white overflow-x-auto pb-3 md:pb-4 no-scrollbar relative z-10 pr-12 justify-center md:justify-start`}>
+                            <div className="relative flex-1 min-w-0 w-full lg:w-auto overflow-visible">
+                                <div className={`role-tabs flex gap-4 md:gap-8 text-[10px] md:text-[11px] uppercase tracking-[0.15em] md:tracking-[0.2em] text-white overflow-x-auto pb-3 md:pb-4 no-scrollbar relative z-10 pr-12 justify-center md:justify-start`}>
                                     {availableRoles.map((role) => (
                                         <button 
                                             key={role}
                                             onClick={() => setRoleFilter(role)}
-                                            className={`transition-all ${THEME.animation.fast} whitespace-nowrap ${
-                                                roleFilter === role 
-                                                    ? 'opacity-100 border-b border-white pb-1' 
-                                                    : 'opacity-60 hover:opacity-100'
-                                            }`}
+                                            aria-pressed={roleFilter === role}
+                                            className={`role-tab group whitespace-nowrap border-b border-transparent pb-1 ${roleFilter === role ? 'is-active' : ''}`}
                                         >
-                                            {getRoleDisplayLabel(role)}
+                                            <span className={`transition-colors ${THEME.animation.fast} ${roleFilter === role ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>
+                                                {getRoleDisplayLabel(role)}
+                                            </span>
                                         </button>
                                     ))}
                                 </div>
@@ -366,25 +365,28 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, brands, onHover,
                     )}
 
                     {/* Filters Row */}
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-4 md:gap-8 overflow-visible">
+                    <div className="flex flex-col lg:flex-row justify-between items-center gap-4 lg:gap-8 overflow-visible">
                         {/* Category Filter */}
-                        <div className="relative flex-1 w-full md:w-auto flex items-center justify-center md:justify-start overflow-visible">
-                            <div className={`flex gap-4 md:gap-8 text-[10px] md:text-[11px] uppercase tracking-[0.15em] md:tracking-[0.2em] text-white overflow-x-auto no-scrollbar relative z-10 pr-12`}>
+                        <div className="relative flex-1 min-w-0 w-full lg:w-auto flex items-center justify-center lg:justify-start overflow-visible">
+                            <div className={`filter-tabs flex gap-4 md:gap-8 text-[10px] md:text-[11px] uppercase tracking-[0.15em] md:tracking-[0.2em] text-white overflow-x-auto no-scrollbar relative z-10 pr-12`}>
                                 {availableTypes.map((type) => (
                                     <button 
                                         key={type}
                                         onClick={() => setFilter(type)} 
-                                    className={`transition-all ${THEME.animation.fast} whitespace-nowrap ${filter === type ? 'opacity-100 border-b border-white pb-1' : 'opacity-60 hover:opacity-100'}`}
-                                >
-                                    {type}
-                                </button>
+                                        aria-pressed={filter === type}
+                                        className={`filter-tab group whitespace-nowrap border-b border-transparent pb-1 ${filter === type ? 'is-active' : ''}`}
+                                    >
+                                        <span className={`transition-colors ${THEME.animation.fast} ${filter === type ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>
+                                            {type}
+                                        </span>
+                                    </button>
                             ))}
                         </div>
                         <div className="absolute right-0 top-0 bottom-0 w-12 md:w-16 bg-gradient-to-l from-bg-main to-transparent pointer-events-none z-20"></div>
                     </div>
 
                         {/* View Toggle + Search Container - side by side */}
-                        <div className="flex flex-row gap-3 sm:gap-4 md:gap-6 items-center justify-center md:justify-end shrink-0 w-auto py-2">
+                        <div className="flex flex-row gap-3 sm:gap-4 md:gap-6 items-center justify-center lg:justify-end shrink-0 w-auto py-2">
                         {/* Search Input - Pill style matching View Toggle */}
                         <div className="relative flex items-center border border-white/20 rounded-full px-3 md:px-4 py-1.5 md:py-2 bg-white/5 backdrop-blur-sm">
                             <input
@@ -400,14 +402,14 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, brands, onHover,
                                     }
                                 }}
                                 placeholder="Search All"
-                                className={`bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-[8px] md:text-[9px] uppercase tracking-[0.15em] md:tracking-[0.2em] text-white placeholder:text-text-muted placeholder:opacity-60 transition-all duration-300 ${
+                                className={`bg-transparent border-none focus:outline-none text-[8px] md:text-[9px] uppercase tracking-[0.15em] md:tracking-[0.2em] text-white placeholder:text-text-muted placeholder:opacity-60 transition-[width] duration-300 ${
                                     searchQuery ? 'w-28 md:w-36 lg:w-40 xl:w-44' : 'w-20 md:w-24 lg:w-28 xl:w-32'
                                 }`}
                             />
                             {searchQuery && (
                                 <button
                                     onClick={() => setSearchQuery('')}
-                                    className="ml-1 md:ml-2 text-text-muted opacity-60 hover:opacity-100 hover:text-white transition-all outline-none focus:outline-none"
+                                    className="ml-1 md:ml-2 text-text-muted opacity-60 hover:opacity-100 hover:text-white transition-all"
                                 >
                                     <svg className="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -420,14 +422,14 @@ export const IndexView: React.FC<IndexViewProps> = ({ projects, brands, onHover,
                         <div className="flex gap-3 md:gap-4 items-center border border-white/20 rounded-full px-3 md:px-4 py-1.5 md:py-2 bg-white/5 backdrop-blur-sm shrink-0">
                              <button 
                                 onClick={() => setViewMode('grid')}
-                                className={`text-[8px] md:text-[9px] uppercase tracking-[0.15em] md:tracking-[0.2em] transition-opacity outline-none focus:outline-none ${THEME.animation.fast} ${viewMode === 'grid' ? 'opacity-100 text-white' : 'opacity-60 text-text-muted hover:opacity-100'}`}
+                                className={`text-[8px] md:text-[9px] uppercase tracking-[0.15em] md:tracking-[0.2em] transition-opacity ${THEME.animation.fast} ${viewMode === 'grid' ? 'opacity-100 text-white' : 'opacity-60 text-text-muted hover:opacity-100'}`}
                              >
                                 Filmstrip
                              </button>
                              <div className="w-[1px] h-2.5 md:h-3 bg-white/20"></div>
                              <button 
                                 onClick={() => setViewMode('list')}
-                                className={`text-[8px] md:text-[9px] uppercase tracking-[0.15em] md:tracking-[0.2em] transition-opacity outline-none focus:outline-none ${THEME.animation.fast} ${viewMode === 'list' ? 'opacity-100 text-white' : 'opacity-60 text-text-muted hover:opacity-100'}`}
+                                className={`text-[8px] md:text-[9px] uppercase tracking-[0.15em] md:tracking-[0.2em] transition-opacity ${THEME.animation.fast} ${viewMode === 'list' ? 'opacity-100 text-white' : 'opacity-60 text-text-muted hover:opacity-100'}`}
                              >
                                 List
                              </button>

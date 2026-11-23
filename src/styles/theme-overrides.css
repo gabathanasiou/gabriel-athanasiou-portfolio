@@ -1,5 +1,18 @@
 /* Global Theme Overrides */
 
+:root {
+  color-scheme: dark;
+}
+
+html.light-theme {
+  color-scheme: light;
+}
+
+/* Theatre mode native dialog */
+.theatre-dialog::backdrop {
+  background: #000000;
+}
+
 ::selection {
   background: var(--color-selection);
   color: var(--color-selection-text, var(--color-text-main));
@@ -26,7 +39,7 @@
 }
 
 .light-theme .text-text-muted {
-  color: #888888 !important;
+  color: #666666 !important;
 }
 
 .light-theme .bg-bg-main {
@@ -91,10 +104,24 @@
 }
 
 .light-theme .text-gray-400 {
-  color: #888888 !important;
+  color: #666666 !important;
 }
 
 .light-theme .text-gray-500 {
+  color: #666666 !important;
+}
+
+/* Dark theme: gray-500 is used for 10px meta text on #050505.
+   #6b7280 is 4.21:1 there; lift it to 5.2:1. */
+.text-gray-500 {
+  color: #808080;
+}
+
+.text-gray-600 {
+  color: #808080;
+}
+
+.light-theme .text-gray-600 {
   color: #666666 !important;
 }
 
@@ -310,18 +337,6 @@
 
 .light-theme a:hover {
   color: #000000 !important;
-}
-
-.light-theme ::-webkit-scrollbar-track {
-  background: #f0f0f0;
-}
-
-.light-theme ::-webkit-scrollbar-thumb {
-  background: #cccccc;
-}
-
-.light-theme ::-webkit-scrollbar-thumb:hover {
-  background: #aaaaaa;
 }
 
 .light-theme .bg-gray-100 {

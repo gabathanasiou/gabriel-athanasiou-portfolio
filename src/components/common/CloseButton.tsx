@@ -40,7 +40,7 @@ export const CloseButton: React.FC<CloseButtonProps> = ({ onClick, isLightTheme 
             <div className={`${THEME.projectDetail.contentMaxWidth} mx-auto flex justify-end`}>
                 <button 
                     onClick={onClick} 
-                    className={`${textColor} ${stateClass} group outline-none pointer-events-auto transition-colors duration-500`}
+                    className={`${textColor} ${stateClass} group pointer-events-auto transition-colors duration-500`}
                     aria-label="Close"
                 >
                     <div className="flex items-center gap-4">

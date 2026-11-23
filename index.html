@@ -1,47 +1,46 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="__HTML_CLASS__">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- SEO Meta Tags -->
-    <title>GABRIEL ATHANASIOU | Director</title>
-    <meta name="description" content="Director based in London & Athens. Narrative, Commercial, Music Video.">
-    <meta name="keywords" content="director, filmmaker, narrative, commercial, music video, london, athens">
+    <meta name="color-scheme" content="__COLOR_SCHEME__">
+    <meta name="theme-color" content="__THEME_COLOR__">
+
+    <!-- SEO Meta Tags (generated per portfolio mode in vite.config.ts) -->
+    <title>__SITE_TITLE__</title>
+    <meta name="description" content="__SITE_DESCRIPTION__">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
-    <meta property="og:title" content="GABRIEL ATHANASIOU | Director">
-    <meta property="og:description" content="Director based in London & Athens. Narrative, Commercial, Music Video.">
+    <meta property="og:site_name" content="__SITE_NAME__">
+    <meta property="og:title" content="__SITE_TITLE__">
+    <meta property="og:description" content="__SITE_DESCRIPTION__">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200">
-    <meta property="og:url" content="https://directedbygabriel.com">
+    <meta property="og:image" content="__OG_IMAGE__">
+    <meta property="og:url" content="__SITE_URL__">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="GABRIEL ATHANASIOU | Director">
-    <meta name="twitter:description" content="Director based in London & Athens. Narrative, Commercial, Music Video.">
-    <meta name="twitter:image" content="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200">
+    <meta name="twitter:title" content="__SITE_TITLE__">
+    <meta name="twitter:description" content="__SITE_DESCRIPTION__">
+    <meta name="twitter:image" content="__OG_IMAGE__">
     <meta name="twitter:creator" content="@gab_ath">
-    
+
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://directedbygabriel.com">
-    
+    <link rel="canonical" href="__SITE_URL__">
+
     <!-- Sitemap -->
     <link rel="sitemap" type="application/xml" href="/sitemap.xml">
-    
+
     <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' font-weight='bold' fill='%23fff'>GA</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%23050505' width='180' height='180'/><text x='50%' y='50%' dy='.3em' font-size='80' font-weight='bold' fill='%23fff' text-anchor='middle' dominant-baseline='middle'>GA</dominant-baseline></text></svg>">
 
-    <!-- Tailwind CSS (Pinned Version + Typography) -->
-    <script src="https://cdn.tailwindcss.com/3.4.1?plugins=typography"></script>
-    
-    <!-- Fonts with font-display=swap for better performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"></noscript>
-    
-    <!-- Image optimization: preload hero images -->
-    <link rel="prefetch" as="image" href="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1920">
+    <!-- Tailwind is compiled at build time (see tailwind.config.js / src/index.css) -->
+
+    <!-- Third-party origins used by the data and image pipeline -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://res.cloudinary.com">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+
+    <!-- Fonts: generated per portfolio mode in vite.config.ts, loaded without blocking -->
+    __FONT_LINKS__
 
     <!-- Cloudinary Configuration -->
     <script>
@@ -50,97 +49,70 @@
         window.CLOUDINARY_CLOUD_NAME = 'date24ay6';
     </script>
 
-    <!-- Tailwind Config -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        // These reference the CSS variables set by GlobalStyles.tsx
-                        sans: ['var(--font-sans)', 'sans-serif'],
-                        serif: ['var(--font-serif)', 'serif'],
-                    },
-                    colors: {
-                        // These reference the CSS variables set by GlobalStyles.tsx
-                        'bg-main': 'var(--color-bg-main)',
-                        'text-main': 'var(--color-text-main)',
-                        'text-muted': 'var(--color-text-muted)',
-                    },
-                    transitionTimingFunction: {
-                        'expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
-                    },
-                    animation: {
-                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'view-enter': 'viewEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'view-exit': 'viewExit 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'slow-spin': 'slowSpin 45s linear infinite',
-                        'reveal': 'reveal 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                    },
-                    keyframes: {
-                        fadeInUp: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        viewEnter: {
-                            '0%': { opacity: '0', filter: 'blur(3px)' },
-                            '100%': { opacity: '1', filter: 'blur(0)' },
-                        },
-                        viewExit: {
-                            '0%': { opacity: '1', filter: 'blur(0)' },
-                            '100%': { opacity: '0', filter: 'blur(3px)' },
-                        },
-                        reveal: {
-                            '0%': { transform: 'scale(1.05)', opacity: '0' },
-                            '100%': { transform: 'scale(1)', opacity: '1' },
-                        },
-                        slowSpin: {
-                            '0%': { transform: 'scale(3) rotate(0deg)' },
-                            '100%': { transform: 'scale(3) rotate(360deg)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         html {
             scroll-behavior: smooth;
             overflow-y: scroll; /* Always show scrollbar to prevent layout jumps */
+            --scrollbar-thumb: #666666;
+            --scrollbar-track: #050505;
+            /* Standard scrollbar styling; the WebKit fallback lives below. */
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+            scrollbar-width: thin;
         }
-        body { 
+        html.light-theme {
+            --scrollbar-thumb: #767676;
+            --scrollbar-track: #f0f0f0;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+        }
+        @supports not (scrollbar-color: auto) {
+            html {
+                /* Reset thin so ::-webkit-scrollbar styling is not suppressed. */
+                scrollbar-width: auto;
+            }
+            ::-webkit-scrollbar {
+                width: 6px;
+                background: var(--scrollbar-track);
+            }
+            ::-webkit-scrollbar-thumb {
+                background: var(--scrollbar-thumb);
+                border-radius: 4px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: #888888;
+            }
+        }
+        body {
             background-color: #050505; /* Fallback */
-            color: #ffffff; 
-            -webkit-font-smoothing: antialiased; 
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
         }
-        
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 6px; background: #050505; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
+        html.light-theme body {
+            background-color: #ffffff;
+            color: #1a1a1a;
+        }
+
+        /* SCROLLBAR — hiding helper */
+        .no-scrollbar {
+            scrollbar-width: none;
+        }
+        @supports not (scrollbar-color: auto) {
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+        }
+
         /* Utility for blend modes */
         .blend-text {
             mix-blend-mode: difference;
             color: white;
         }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
-    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?external=react,react-dom",
-    "@remix-run/router": "https://esm.sh/@remix-run/router@1.15.3"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>

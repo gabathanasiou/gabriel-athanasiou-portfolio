@@ -91,14 +91,17 @@ export const BlogView: React.FC<BlogViewProps> = ({ posts }) => {
             <div className="max-w-5xl mx-auto">
                 <div className="text-center mb-24">
                      <h1 className={`${THEME.typography.h1} mb-8 mix-blend-difference text-white`}>Journal</h1>
-                     <div className={`flex justify-center gap-6 ${THEME.typography.meta} text-white flex-wrap mix-blend-difference`}>
+                     <div className={`journal-tabs flex justify-center gap-6 ${THEME.typography.meta} text-white flex-wrap mix-blend-difference`}>
                         {allTags.map(tag => (
                             <button 
                                 key={tag}
                                 onClick={() => setFilter(tag)}
-                                className={`transition-all ${THEME.animation.fast} ${filter === tag ? 'opacity-100 border-b border-white pb-1' : 'opacity-60 hover:opacity-100'}`}
+                                aria-pressed={filter === tag}
+                                className={`journal-tab group border-b border-transparent pb-1 ${filter === tag ? 'is-active' : ''}`}
                             >
-                                {tag}
+                                <span className={`transition-colors ${THEME.animation.fast} ${filter === tag ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>
+                                    {tag}
+                                </span>
                             </button>
                         ))}
                      </div>

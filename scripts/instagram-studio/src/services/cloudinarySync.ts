@@ -257,7 +257,7 @@ export async function uploadScheduleToCloudinary(
       result = await response.json();
     } catch (parseError) {
       console.error('Failed to parse response JSON:', parseError);
-      throw new Error(`Invalid JSON response from sync function: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`);
+      throw new Error(`Invalid JSON response from sync function: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`, { cause: parseError });
     }
 
     if (result.error) {

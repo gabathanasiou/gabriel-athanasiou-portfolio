@@ -56,7 +56,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { getOptimizedImageUrl, getSessionPreset, isSlowConnection, isUltraSlowConnection, type CloudinaryPreset } from '../../utils/imageOptimization';
+import { getOptimizedImageUrl, getCloudinarySrcSet, getSessionPreset, isSlowConnection, isUltraSlowConnection, type CloudinaryPreset } from '../../utils/imageOptimization';
 import { THEME } from '../../theme';
 
 // Enable debug logging in development only
@@ -91,6 +91,14 @@ interface OptimizedImageProps {
   preset?: CloudinaryPreset;
   /** Skip automatic preset downgrades based on viewport/connection. Use for hero images that should always stay at the requested preset. */
   skipDowngrade?: boolean;
+  /** Responsive sizes hint for Cloudinary srcset (defaults to 100vw). */
+  sizes?: string;
+  /** Fetch priority for the LCP image. Use "high" on the first hero only. */
+  fetchPriority?: 'high' | 'low' | 'auto';
+  /** Intrinsic width, reserves layout space before the image loads. */
+  width?: number;
+  /** Intrinsic height, reserves layout space before the image loads. */
+  height?: number;
 }
 
 /**
@@ -128,7 +136,11 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   decoding = 'async' as const,
   useOriginalOnDesktop = false,
   preset,
-  skipDowngrade = false
+  skipDowngrade = false,
+  sizes = '100vw',
+  fetchPriority,
+  width,
+  height
 }) => {
   // If no fallback URL provided, don't render anything
   if (!fallbackUrl) {
@@ -188,6 +200,12 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [fallbackLevel, setFallbackLevel] = useState<number>(totalImages === 0 ? 2 : 0); // Skip fallbacks if totalImages=0
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // Only offer a srcset while the current source is Cloudinary; after a
+  // fallback to local WebP or the Airtable URL there is only one rendition.
+  const responsiveSrcSet = currentSrc.includes('res.cloudinary.com')
+    ? getCloudinarySrcSet(currentSrc)
+    : undefined;
+
   const handleLoad = () => {
     setIsLoaded(true);
   };
@@ -233,6 +251,9 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
           alt={alt}
           loading={loading}
           decoding={decoding}
+          fetchPriority={fetchPriority}
+          width={width}
+          height={height}
           onLoad={handleLoad}
           onError={handleError}
           className={`${isLoaded ? 'opacity-100' : 'opacity-0'} ${className}`}
@@ -245,9 +266,14 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   return (
     <img
       src={currentSrc}
+      srcSet={responsiveSrcSet}
+      sizes={responsiveSrcSet ? sizes : undefined}
       alt={alt}
       loading={loading}
       decoding={decoding}
+      fetchPriority={fetchPriority}
+      width={width}
+      height={height}
       onLoad={handleLoad}
       onError={handleError}
       // ⚠️ CRITICAL ORDER: opacity state first, then className last

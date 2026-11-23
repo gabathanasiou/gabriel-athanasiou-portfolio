@@ -56,18 +56,27 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, brands, con
 
     // Hero slideshow state
     const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+    const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
     const SLIDESHOW_INTERVAL = 20000; // 20 seconds per slide
 
-    // Auto-advance slideshow
     useEffect(() => {
-        if (!hasMultipleHeroes || showShowreel) return;
+        const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const update = () => setPrefersReducedMotion(query.matches);
+        update();
+        query.addEventListener('change', update);
+        return () => query.removeEventListener('change', update);
+    }, []);
+
+    // Auto-advance slideshow; static for reduced-motion users.
+    useEffect(() => {
+        if (!hasMultipleHeroes || showShowreel || prefersReducedMotion) return;
 
         const timer = setInterval(() => {
             setCurrentHeroIndex(prev => (prev + 1) % heroProjects.length);
         }, SLIDESHOW_INTERVAL);
 
         return () => clearInterval(timer);
-    }, [hasMultipleHeroes, heroProjects.length, showShowreel]);
+    }, [hasMultipleHeroes, heroProjects.length, showShowreel, prefersReducedMotion]);
 
     // Current hero project (for slideshow or single hero)
     const heroProject = showShowreel ? null : (heroProjects.length > 0 ? heroProjects[currentHeroIndex] : featuredProjects[0]);
@@ -96,7 +105,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, brands, con
                 {showShowreel ? (
                     <div className="w-full h-full relative">
                         <div className="absolute inset-0 pointer-events-none z-0" style={{ opacity: 0.8 }}>
-                            <VideoEmbed url={config.showreel!.videoUrl} autoplay={true} muted={THEME.hero.showreel.muted} />
+                            <VideoEmbed url={config.showreel!.videoUrl} autoplay={true} muted={THEME.hero.showreel.muted} title="Showreel" />
                         </div>
                         <div className="absolute inset-0 z-10 bg-black/10"></div>
                         <div className={`absolute z-20 mix-blend-difference text-white home-hero-text ${THEME.hero.textPosition} ${THEME.hero.textAlignment} ${THEME.hero.textMaxWidth}`}>
@@ -140,6 +149,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, brands, con
                                             totalImages={hp.gallery?.length || 0}
                                             alt={hp.title}
                                             loading={idx === 0 ? "eager" : "lazy"}
+                                            sizes="100vw"
+                                            width={1600}
+                                            height={900}
+                                            fetchPriority={idx === currentHeroIndex ? 'high' : 'auto'}
                                             preset={upgradePreset(getSessionPreset())}
                                             skipDowngrade={true}
                                             className="w-full h-full object-cover transform-gpu scale-100 group-hover:scale-[1.02] transition-transform duration-[1200ms] ease-out"
@@ -155,6 +168,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, brands, con
                                     totalImages={heroProject.gallery?.length || 0}
                                     alt={heroProject.title}
                                     loading="eager"
+                                    sizes="100vw"
+                                    width={1600}
+                                    height={900}
+                                    fetchPriority="high"
                                     preset={upgradePreset(getSessionPreset())}
                                     skipDowngrade={true}
                                     className={`w-full h-full object-cover ${heroHasRealImage
@@ -173,7 +190,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, brands, con
 
                             {/* Slideshow indicators */}
                             {hasMultipleHeroes && (
-                                <div className="absolute bottom-[calc(2rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 flex gap-2">
+                                <div className="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 flex items-center gap-0">
                                     {heroProjects.map((_, idx) => (
                                         <button
                                             key={idx}
@@ -181,12 +198,16 @@ export const HomeView: React.FC<HomeViewProps> = ({ projects, posts, brands, con
                                                 e.stopPropagation();
                                                 setCurrentHeroIndex(idx);
                                             }}
-                                            className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentHeroIndex
-                                                ? 'bg-white w-6'
-                                                : 'bg-white/40 hover:bg-white/60'
-                                                }`}
+                                            className="w-6 h-6 flex items-center justify-center group"
                                             aria-label={`Go to slide ${idx + 1}`}
-                                        />
+                                        >
+                                            <span
+                                                className={`block h-2 rounded-full transition-all duration-300 ${idx === currentHeroIndex
+                                                    ? 'bg-white w-6'
+                                                    : 'bg-white/40 w-2 group-hover:bg-white/60'
+                                                    }`}
+                                            />
+                                        </button>
                                     ))}
                                 </div>
                             )}

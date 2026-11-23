@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Brand, Project, BlogPost, HomeConfig } from '../../types';
@@ -106,6 +106,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
     const [isNextHovered, setIsNextHovered] = useState(false);
     const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
     const [isVideoTransitioning, setIsVideoTransitioning] = useState(false);
+    const theatreDialogRef = useRef<HTMLDialogElement>(null);
 
     // Track project view on load
     useEffect(() => {
@@ -171,6 +172,33 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
         }, 800);
     };
 
+    // Theatre mode uses a native modal dialog: focus is moved into it, the rest
+    // of the page becomes inert, Escape is handled by the platform and focus
+    // returns to the trigger on close.
+    useEffect(() => {
+        const dialog = theatreDialogRef.current;
+        if (!isPlaying || !project.videoUrl || !dialog) return;
+
+        if (!dialog.open) dialog.showModal();
+
+        const handleCancel = (event: Event) => {
+            event.preventDefault();
+            handleCloseTheatre();
+        };
+        dialog.addEventListener('cancel', handleCancel);
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            dialog.removeEventListener('cancel', handleCancel);
+            document.body.style.overflow = previousOverflow;
+            if (dialog.open) dialog.close();
+        };
+        // handleCloseTheatre only calls state setters, so it is safe to omit.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isPlaying, project.videoUrl]);
+
     const isLowRes = !project.gallery || project.gallery.length === 0;
 
     // Generate procedural thumbnail if no video and no gallery images
@@ -225,6 +253,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
 
     useEffect(() => {
         if (slides.length <= 1) return;
+        // Static view for reduced-motion users; the arrows still work.
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         const interval = setInterval(() => {
             setCurrentSlide(prev => (prev + 1) % slides.length);
         }, 5000);
@@ -276,12 +306,16 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
 
             {/* --- THEATRE MODE OVERLAY (PORTAL) --- */}
             {isPlaying && hasHeroVideo && createPortal(
-                <div className={`fixed inset-0 z-[9999] bg-black flex items-center justify-center ${isClosing ? 'animate-view-exit' : 'animate-view-enter'}`}>
+                <dialog
+                    ref={theatreDialogRef}
+                    aria-label="Video preview"
+                    className={`theatre-dialog fixed inset-0 z-[9999] m-0 h-[100dvh] w-screen max-h-none max-w-none border-0 bg-black p-0 text-white flex items-center justify-center ${isClosing ? 'animate-view-exit' : 'animate-view-enter'}`}
+                >
 
                     {/* Floating Close Button */}
                     <button
                         onClick={handleCloseTheatre}
-                        className={`absolute top-6 right-6 md:top-10 md:right-12 z-[1000] group outline-none mix-blend-difference text-white cursor-pointer`}
+                        className={`absolute top-6 right-6 md:top-10 md:right-12 z-[1000] group mix-blend-difference text-white cursor-pointer`}
                         aria-label="Close Preview"
                     >
                         <div className="flex items-center gap-4">
@@ -299,7 +333,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                     {/* Video Container with fade transition */}
                     <div className="w-full h-full p-4 md:p-12 md:pb-20 flex items-center justify-center">
                         <div className={`w-full max-w-7xl aspect-video relative shadow-2xl bg-black transition-opacity duration-300 ${isVideoTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-                            <VideoEmbed url={parsedVideos[currentVideoIndex]?.url || project.videoUrl!} autoplay={true} muted={false} />
+                            <VideoEmbed url={parsedVideos[currentVideoIndex]?.url || project.videoUrl!} autoplay={true} muted={false} title={project.title} />
                         </div>
                     </div>
 
@@ -332,7 +366,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                         </div>
                     </div>
 
-                </div>,
+                </dialog>,
                 document.body
             )}
 
@@ -405,7 +439,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                             {hasHeroVideo ? (
                                 <button
                                     onClick={handleWatchClick}
-                                    className="group flex items-center gap-4 mix-blend-difference cursor-pointer outline-none"
+                                    className="group flex items-center gap-4 mix-blend-difference cursor-pointer"
                                 >
                                     <span className={`${THEME.typography.meta} text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all ${THEME.animation.medium} ${THEME.animation.ease}`}>Watch Film</span>
                                     <div className={`w-16 h-16 md:w-20 md:h-20 ${THEME.ui.button.radius} ${THEME.ui.button.border} flex items-center justify-center bg-black/20 ${THEME.ui.button.backdrop} group-hover:bg-white/10 group-hover:border-white transition-all ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-105`}>
@@ -418,7 +452,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                                         analyticsService.trackEvent('contact_cta_click', { project_id: project.id, project_title: project.title });
                                         navigate('/about');
                                     }}
-                                    className={`group inline-flex items-center mix-blend-difference cursor-pointer outline-none`}
+                                    className={`group inline-flex items-center mix-blend-difference cursor-pointer`}
                                     aria-label="Contact to request viewing link"
                                 >
                                     <div className={`px-5 py-3 ${THEME.ui.button.radius} ${THEME.ui.button.border} ${THEME.ui.button.backdrop} bg-black/30 text-white/90 hover:bg-white/10 hover:border-white transition ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-[1.02]`}
@@ -435,7 +469,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                         {hasHeroVideo && (
                             <button
                                 onClick={handleWatchClick}
-                                className="group flex items-center gap-4 mix-blend-difference cursor-pointer outline-none"
+                                className="group flex items-center gap-4 mix-blend-difference cursor-pointer"
+                                aria-label={`Watch ${project.title}`}
                             >
                                 <div className={`w-16 h-16 ${THEME.ui.button.radius} ${THEME.ui.button.border} flex items-center justify-center bg-black/20 ${THEME.ui.button.backdrop} group-hover:bg-white/10 group-hover:border-white transition-all ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-105`}>
                                     <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" className="text-white ml-1"><path d="M11.5 7L0.5 13.5L0.5 0.5L11.5 7Z" /></svg>
@@ -448,7 +483,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                                     analyticsService.trackEvent('contact_cta_click', { project_id: project.id, project_title: project.title });
                                     navigate('/about');
                                 }}
-                                className={`group inline-flex items-center mix-blend-difference cursor-pointer outline-none`}
+                                className={`group inline-flex items-center mix-blend-difference cursor-pointer`}
                                 aria-label="Contact to request viewing link"
                             >
                                 <div className={`px-5 py-3 ${THEME.ui.button.radius} ${THEME.ui.button.border} ${THEME.ui.button.backdrop} bg-black/30 text-white/90 hover:bg-white/10 hover:border-white transition ${THEME.animation.medium} ${THEME.animation.ease} group-hover:scale-[1.02]`}>
@@ -657,7 +692,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ allProject
                                 <p className={`${THEME.typography.meta} text-text-muted mb-2`}>{video.label}</p>
                             )}
                             <div className="w-full aspect-video bg-black shadow-lg relative">
-                                <VideoEmbed url={video.url} autoplay={false} />
+                                <VideoEmbed url={video.url} autoplay={false} title={video.label || project.title} />
                             </div>
                         </div>
                     ))}

@@ -90,16 +90,22 @@ const pickRandom = <T,>(array: T[]): T => array[Math.floor(Math.random() * array
  * @returns Array of n random elements
  */
 const pickRandomN = <T,>(array: T[], n: number): T[] => {
-    const shuffled = [...array].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, n);
+    return shuffle(array).slice(0, n);
 };
 
 /**
- * Shuffle an array using Fisher-Yates-like algorithm
+ * Shuffle an array with Fisher-Yates, returning a new array.
  * @param array - Source array
  * @returns New shuffled array
  */
-const shuffle = <T,>(array: T[]): T[] => [...array].sort(() => Math.random() - 0.5);
+const shuffle = <T,>(array: T[]): T[] => {
+    const result = array.slice();
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+};
 
 /**
  * Pick a random project from an array (type-safe version)

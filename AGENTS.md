@@ -19,7 +19,7 @@ there is no Airtable or Cloudinary credential in the browser and no server-side 
 layer. The pipeline that produces the JSON lives in the separate
 [`gabriel-portfolio-data`](../gabriel-portfolio-data) repo.
 
-Stack: React 19.2, Vite 6, React Router 7, TypeScript 5.8, Tailwind 3.4 (CDN),
+Stack: React 19.2, Vite 6, React Router 7, TypeScript 5.8, Tailwind 3.4 (build-time),
 Netlify (hosting + functions + edge function).
 
 ## Repo map
@@ -62,8 +62,8 @@ docs/                     deployment, image optimisation, studio quick reference
 | `npm run instagram-studio` | run the sub-app dev server |
 | `npm run instagram-studio:build` | build the sub-app |
 
-There is **no lint or formatter yet**, and no CI. Do not claim a command exists
-because a doc says so — check `package.json`.
+There is **no code linter or formatter yet**, and no CI; `npm run lint` only checks
+the doc budget. Do not claim a command exists because a doc says so — check `package.json`.
 
 ## Verify before done
 
@@ -93,8 +93,8 @@ there is no browser test layer.
 
 ## Styling
 
-- Tailwind 3.4 is loaded from the CDN in `index.html`, with the inline
-  `tailwind.config` there. Utility classes are the layout layer.
+- Tailwind 3.4 is compiled at build time (`tailwind.config.js` + `src/index.css`);
+  there is no CDN script and no inline config. Utility classes are the layout layer.
 - Shared design decisions (type scale, section padding, colours, animation timings)
   live in `src/theme.ts` as `THEME` class strings and CSS variables, applied globally
   by `src/components/GlobalStyles.tsx`.
@@ -130,9 +130,9 @@ there is no browser test layer.
 
 ## Testing
 
-- `src/utils/__tests__/` holds the Vitest suite (41 tests). Both files cover shipped
-  TypeScript: `markdown.test.ts` and `videoHelpers.test.mjs` (which imports
-  `videoHelpers.ts` extensionless).
+- `src/utils/__tests__/` holds the Vitest suite (52 tests). The files cover shipped
+  TypeScript: `brands.test.ts`, `markdown.test.ts` and `videoHelpers.test.mjs` (which
+  imports `videoHelpers.ts` extensionless).
 - Add tests for pure logic (parsing, slugs, video URLs, markdown/sanitisation) in the
   same folder, importing the `.ts` module from `src/`.
 - No browser/e2e layer exists yet. A UI change is verified by running the app.
@@ -188,3 +188,10 @@ If two docs disagree, the code wins. Fix the doc in the same change.
 - Do not edit the `data` branch, force-push `main`, or commit `.env*`.
 - Do not deploy (or add a deploy marker) without an explicit request.
 - Do not add a component library or second styling system without asking.
+
+## Roadmap
+
+- `docs/ROADMAP.md` is open-only; completed items go to `docs/ROADMAP-ARCHIVE.md` as
+  one line. Ids are stable and unique forever.
+- Use `npm run roadmap -- list|add|close|check`; the rules are in the roadmap header.
+- Triage every new ask through the dedupe ladder before adding an item.

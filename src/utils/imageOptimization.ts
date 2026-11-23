@@ -264,7 +264,7 @@ export const buildCloudinaryUrl = (
 
   // Use preset width (no manual overrides allowed for consistency)
   const {
-    format = 'webp',     // Force WebP format
+    format = 'auto',     // Let Cloudinary negotiate AVIF/WebP per browser
     crop = 'limit'       // Prevent upscaling
   } = options;
   const width = widthValue;
@@ -285,6 +285,25 @@ export const buildCloudinaryUrl = (
   }
 
   return finalUrl;
+};
+
+/**
+ * Build a responsive srcset from an existing Cloudinary URL.
+ *
+ * Cloudinary applies transformations on the fly, so the same public ID can be
+ * requested at several widths. `c_limit` prevents upscaling past the source.
+ * Returns an empty string for non-Cloudinary URLs so callers can use it
+ * unconditionally.
+ */
+export const getCloudinarySrcSet = (
+  url: string,
+  widths: number[] = [400, 640, 800, 1200, 1600, 2000]
+): string => {
+  if (!url || !url.includes('res.cloudinary.com')) return '';
+
+  return widths
+    .map(width => `${url.replace(/([,/])w_\d+/, `$1w_${width}`)} ${width}w`)
+    .join(', ');
 };
 
 /**
